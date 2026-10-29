@@ -1,9 +1,21 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react';
 import { CostSettings, KpiData, Order, Toner, TonerStatus } from '@/types';
 import { DEFAULT_ORDERS, DEFAULT_SETTINGS, DEFAULT_TONERS } from '@/utils/initialData';
 import { calculateKpis, getStandardUnitPrice } from '@/utils/calculations';
+import { supabase, isSupabaseConfigured } from '@/utils/supabase';
+import {
+  dbOrderToOrder,
+  orderToDbOrder,
+  dbTonerToToner,
+  tonerToDbToner,
+  dbSettingsToSettings,
+  settingsToDbSettings,
+  DbOrder,
+  DbToner,
+  DbSettings,
+} from '@/utils/supabaseSync';
 
 interface AddOrderInput {
   customerName: string;
@@ -23,6 +35,7 @@ interface PrintStoreContextType {
   settings: CostSettings;
   kpis: KpiData;
   isLoaded: boolean;
+  isCloudConnected: boolean;
   activeToner: Toner | undefined;
   
   // Order actions
@@ -61,49 +74,128 @@ export function PrintStoreProvider({ children }: { children: React.ReactNode }) 
   const [toners, setToners] = useState<Toner[]>(DEFAULT_TONERS);
   const [settings, setSettings] = useState<CostSettings>(DEFAULT_SETTINGS);
   const [isLoaded, setIsLoaded] = useState(false);
+  const isCloudConnected = isSupabaseConfigured;
 
-  // Load from LocalStorage on mount asynchronously to prevent cascading renders
+  // Initial load from Supabase or LocalStorage
   useEffect(() => {
-    const timer = setTimeout(() => {
-      try {
-        const storedOrders = localStorage.getItem(STORAGE_KEY_ORDERS);
-        const storedToners = localStorage.getItem(STORAGE_KEY_TONERS);
-        const storedSettings = localStorage.getItem(STORAGE_KEY_SETTINGS);
+    let isCancelled = false;
+    const db = supabase;
 
-        if (storedOrders) {
-          setOrders(JSON.parse(storedOrders));
-        } else {
-          localStorage.setItem(STORAGE_KEY_ORDERS, JSON.stringify(DEFAULT_ORDERS));
-        }
+    async function loadData() {
+      // 1. Try loading from Supabase if configured
+      if (db) {
+        try {
+          const [ordersRes, tonersRes, settingsRes] = await Promise.all([
+            db.from('orders').select('*').order('created_at', { ascending: false }),
+            db.from('toners').select('*').order('id', { ascending: true }),
+            db.from('settings').select('*').limit(1).maybeSingle(),
+          ]);
 
-        if (storedToners) {
-          setToners(JSON.parse(storedToners));
-        } else {
-          localStorage.setItem(STORAGE_KEY_TONERS, JSON.stringify(DEFAULT_TONERS));
+          if (!isCancelled) {
+            if (ordersRes.data && ordersRes.data.length > 0) {
+              setOrders(ordersRes.data.map((r) => dbOrderToOrder(r as DbOrder)));
+            }
+            if (tonersRes.data && tonersRes.data.length > 0) {
+              setToners(tonersRes.data.map((r) => dbTonerToToner(r as DbToner)));
+            }
+            if (settingsRes.data) {
+              setSettings(dbSettingsToSettings(settingsRes.data as DbSettings));
+            }
+          }
+        } catch (err) {
+          console.error('Error fetching from Supabase, falling back to LocalStorage:', err);
         }
+      } else {
+        // 2. Load from LocalStorage fallback
+        try {
+          const storedOrders = localStorage.getItem(STORAGE_KEY_ORDERS);
+          const storedToners = localStorage.getItem(STORAGE_KEY_TONERS);
+          const storedSettings = localStorage.getItem(STORAGE_KEY_SETTINGS);
 
-        if (storedSettings) {
-          setSettings(JSON.parse(storedSettings));
-        } else {
-          localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(DEFAULT_SETTINGS));
+          if (!isCancelled) {
+            if (storedOrders) setOrders(JSON.parse(storedOrders));
+            if (storedToners) setToners(JSON.parse(storedToners));
+            if (storedSettings) setSettings(JSON.parse(storedSettings));
+          }
+        } catch (err) {
+          console.error('Failed to load from localStorage:', err);
         }
-      } catch (err) {
-        console.error('Failed to load from localStorage:', err);
-      } finally {
+      }
+
+      if (!isCancelled) {
         setIsLoaded(true);
       }
-    }, 0);
+    }
 
-    return () => clearTimeout(timer);
+    loadData();
+
+    return () => {
+      isCancelled = true;
+    };
   }, []);
 
-  // Save to LocalStorage when states change
+  // Supabase Realtime Subscription: Sync live across PC & mobile!
+  useEffect(() => {
+    const db = supabase;
+    if (!db) return;
+
+    const channel = db
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'orders' },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const newOrder = dbOrderToOrder(payload.new as DbOrder);
+            setOrders((prev) => (prev.some((o) => o.id === newOrder.id) ? prev : [newOrder, ...prev]));
+          } else if (payload.eventType === 'UPDATE') {
+            const updated = dbOrderToOrder(payload.new as DbOrder);
+            setOrders((prev) => prev.map((o) => (o.id === updated.id ? updated : o)));
+          } else if (payload.eventType === 'DELETE') {
+            const deletedId = (payload.old as { id: string }).id;
+            setOrders((prev) => prev.filter((o) => o.id !== deletedId));
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'toners' },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const newToner = dbTonerToToner(payload.new as DbToner);
+            setToners((prev) => (prev.some((t) => t.id === newToner.id) ? prev : [...prev, newToner]));
+          } else if (payload.eventType === 'UPDATE') {
+            const updated = dbTonerToToner(payload.new as DbToner);
+            setToners((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+          } else if (payload.eventType === 'DELETE') {
+            const deletedId = (payload.old as { id: string }).id;
+            setToners((prev) => prev.filter((t) => t.id !== deletedId));
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'settings' },
+        (payload) => {
+          if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
+            setSettings(dbSettingsToSettings(payload.new as DbSettings));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      db.removeChannel(channel);
+    };
+  }, []);
+
+  // Cache to LocalStorage whenever state changes
   useEffect(() => {
     if (!isLoaded) return;
     try {
       localStorage.setItem(STORAGE_KEY_ORDERS, JSON.stringify(orders));
-    } catch (err) {
-      console.error('Failed to save orders:', err);
+    } catch (e) {
+      console.error(e);
     }
   }, [orders, isLoaded]);
 
@@ -111,8 +203,8 @@ export function PrintStoreProvider({ children }: { children: React.ReactNode }) 
     if (!isLoaded) return;
     try {
       localStorage.setItem(STORAGE_KEY_TONERS, JSON.stringify(toners));
-    } catch (err) {
-      console.error('Failed to save toners:', err);
+    } catch (e) {
+      console.error(e);
     }
   }, [toners, isLoaded]);
 
@@ -120,8 +212,8 @@ export function PrintStoreProvider({ children }: { children: React.ReactNode }) 
     if (!isLoaded) return;
     try {
       localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
-    } catch (err) {
-      console.error('Failed to save settings:', err);
+    } catch (e) {
+      console.error(e);
     }
   }, [settings, isLoaded]);
 
@@ -136,7 +228,7 @@ export function PrintStoreProvider({ children }: { children: React.ReactNode }) 
   }, [orders, settings]);
 
   // Order actions
-  const addOrder = (input: AddOrderInput): Order => {
+  const addOrder = useCallback((input: AddOrderInput): Order => {
     const qty = Math.max(1, Number(input.quantity) || 1);
     const unitPrice =
       typeof input.unitPrice === 'number'
@@ -145,7 +237,6 @@ export function PrintStoreProvider({ children }: { children: React.ReactNode }) 
     const totalPrice =
       typeof input.totalPrice === 'number' ? input.totalPrice : Math.round(qty * unitPrice * 100) / 100;
 
-    // Determine toner
     const targetTonerId = input.tonerId || (activeToner ? activeToner.id : 'toner-2');
     const targetToner = toners.find((t) => t.id === targetTonerId);
     const tonerLabel = targetToner ? `${targetToner.name} (${qty} stk)` : `Toner (${qty} stk)`;
@@ -165,47 +256,71 @@ export function PrintStoreProvider({ children }: { children: React.ReactNode }) 
       createdAt: Date.now(),
     };
 
-    // Update orders list (newest first)
     setOrders((prev) => [newOrder, ...prev]);
 
-    // Automatically update toner print count on target toner
+    // Update target toner count
+    const db = supabase;
     if (targetToner) {
+      const updatedToner = { ...targetToner, printedCount: targetToner.printedCount + qty };
       setToners((prev) =>
-        prev.map((t) =>
-          t.id === targetToner.id
-            ? { ...t, printedCount: t.printedCount + qty }
-            : t
-        )
+        prev.map((t) => (t.id === targetToner.id ? updatedToner : t))
       );
+      if (db) {
+        db.from('toners').update(tonerToDbToner(updatedToner)).eq('id', updatedToner.id).then();
+      }
+    }
+
+    if (db) {
+      db.from('orders').insert(orderToDbOrder(newOrder)).then();
     }
 
     return newOrder;
-  };
+  }, [activeToner, toners]);
 
-  const updateOrder = (updatedOrder: Order) => {
+  const updateOrder = useCallback((updatedOrder: Order) => {
     setOrders((prev) =>
       prev.map((ord) => (ord.id === updatedOrder.id ? updatedOrder : ord))
     );
-  };
+    const db = supabase;
+    if (db) {
+      db.from('orders').update(orderToDbOrder(updatedOrder)).eq('id', updatedOrder.id).then();
+    }
+  }, []);
 
-  const deleteOrder = (id: string) => {
+  const deleteOrder = useCallback((id: string) => {
     setOrders((prev) => prev.filter((ord) => ord.id !== id));
-  };
+    const db = supabase;
+    if (db) {
+      db.from('orders').delete().eq('id', id).then();
+    }
+  }, []);
 
-  const togglePaymentStatus = (id: string) => {
-    setOrders((prev) =>
-      prev.map((ord) =>
-        ord.id === id ? { ...ord, isPaid: !ord.isPaid } : ord
-      )
-    );
-  };
+  const togglePaymentStatus = useCallback((id: string) => {
+    setOrders((prev) => {
+      const target = prev.find((o) => o.id === id);
+      if (!target) return prev;
+      const nextPaid = !target.isPaid;
+      const updated = { ...target, isPaid: nextPaid };
 
-  const markAllAsPaid = () => {
+      const db = supabase;
+      if (db) {
+        db.from('orders').update({ is_paid: nextPaid }).eq('id', id).then();
+      }
+
+      return prev.map((ord) => (ord.id === id ? updated : ord));
+    });
+  }, []);
+
+  const markAllAsPaid = useCallback(() => {
     setOrders((prev) => prev.map((ord) => ({ ...ord, isPaid: true })));
-  };
+    const db = supabase;
+    if (db) {
+      db.from('orders').update({ is_paid: true }).neq('is_paid', true).then();
+    }
+  }, []);
 
   // Toner actions
-  const addToner = (name?: string, capacity = 108) => {
+  const addToner = useCallback((name?: string, capacity = 108) => {
     const nextNumber = toners.length + 1;
     const tonerName = name || `Toner ${nextNumber}`;
     const newToner: Toner = {
@@ -217,95 +332,144 @@ export function PrintStoreProvider({ children }: { children: React.ReactNode }) 
       notes: 'Tilføjet manuelt',
     };
     setToners((prev) => [...prev, newToner]);
-  };
+    const db = supabase;
+    if (db) {
+      db.from('toners').insert(tonerToDbToner(newToner)).then();
+    }
+  }, [toners]);
 
-  const updateToner = (updatedToner: Toner) => {
+  const updateToner = useCallback((updatedToner: Toner) => {
     setToners((prev) =>
       prev.map((t) => (t.id === updatedToner.id ? updatedToner : t))
     );
-  };
+    const db = supabase;
+    if (db) {
+      db.from('toners').update(tonerToDbToner(updatedToner)).eq('id', updatedToner.id).then();
+    }
+  }, []);
 
-  const deleteToner = (id: string) => {
+  const deleteToner = useCallback((id: string) => {
     setToners((prev) => prev.filter((t) => t.id !== id));
-  };
+    const db = supabase;
+    if (db) {
+      db.from('toners').delete().eq('id', id).then();
+    }
+  }, []);
 
-  const setTonerStatus = (id: string, status: TonerStatus) => {
-    setToners((prev) =>
-      prev.map((t) => {
+  const setTonerStatus = useCallback((id: string, status: TonerStatus) => {
+    setToners((prev) => {
+      const nextToners = prev.map((t) => {
         if (t.id === id) {
           return { ...t, status };
         }
-        // If we set a toner to active, ensure others aren't active unless intended
         if (status === 'active' && t.status === 'active') {
-          return { ...t, status: 'ready' };
+          return { ...t, status: 'ready' as TonerStatus };
         }
         return t;
-      })
-    );
-  };
+      });
 
-  /**
-   * Fast toggle: "Rød betyder den er færdig nu".
-   * Sets this toner as 'finished' (Red) and sets the next ready toner as 'active' (or creates/promotes next).
-   */
-  const markTonerFinishedAndActivateNext = (tonerId: string) => {
+      const db = supabase;
+      if (db) {
+        nextToners.forEach((t) => {
+          db.from('toners').update({ status: t.status }).eq('id', t.id).then();
+        });
+      }
+
+      return nextToners;
+    });
+  }, []);
+
+  const markTonerFinishedAndActivateNext = useCallback((tonerId: string) => {
     setToners((prev) => {
       const targetIndex = prev.findIndex((t) => t.id === tonerId);
       if (targetIndex === -1) return prev;
 
-      // Find next ready toner
       const nextReadyIndex = prev.findIndex(
         (t, idx) => idx > targetIndex && t.status === 'ready'
       );
 
-      // If no subsequent ready toner, find any ready toner
       const fallbackReadyIndex =
         nextReadyIndex !== -1
           ? nextReadyIndex
           : prev.findIndex((t, idx) => idx !== targetIndex && t.status === 'ready');
 
-      return prev.map((t, idx) => {
+      const updated = prev.map((t, idx) => {
         if (idx === targetIndex) {
-          return { ...t, status: 'finished' };
+          return { ...t, status: 'finished' as TonerStatus };
         }
         if (fallbackReadyIndex !== -1 && idx === fallbackReadyIndex) {
-          return { ...t, status: 'active' };
+          return { ...t, status: 'active' as TonerStatus };
         }
         return t;
       });
-    });
-  };
 
-  const adjustTonerCount = (tonerId: string, delta: number) => {
-    setToners((prev) =>
-      prev.map((t) =>
+      const db = supabase;
+      if (db) {
+        updated.forEach((t) => {
+          db.from('toners').update({ status: t.status }).eq('id', t.id).then();
+        });
+      }
+
+      return updated;
+    });
+  }, []);
+
+  const adjustTonerCount = useCallback((tonerId: string, delta: number) => {
+    setToners((prev) => {
+      const updated = prev.map((t) =>
         t.id === tonerId
           ? { ...t, printedCount: Math.max(0, t.printedCount + delta) }
           : t
-      )
-    );
-  };
+      );
+      const target = updated.find((t) => t.id === tonerId);
+      const db = supabase;
+      if (target && db) {
+        db.from('toners').update({ printed_count: target.printedCount }).eq('id', tonerId).then();
+      }
+      return updated;
+    });
+  }, []);
 
   // Settings actions
-  const updateSettings = (newSettings: Partial<CostSettings>) => {
-    setSettings((prev) => ({ ...prev, ...newSettings }));
-  };
+  const updateSettings = useCallback((newSettings: Partial<CostSettings>) => {
+    setSettings((prev) => {
+      const merged = { ...prev, ...newSettings };
+      const db = supabase;
+      if (db) {
+        db.from('settings').upsert(settingsToDbSettings(merged)).then();
+      }
+      return merged;
+    });
+  }, []);
 
-  const resetToDefaults = () => {
+  const resetToDefaults = useCallback(() => {
     setOrders(DEFAULT_ORDERS);
     setToners(DEFAULT_TONERS);
     setSettings(DEFAULT_SETTINGS);
+
+    const db = supabase;
+    if (db) {
+      Promise.all([
+        db.from('orders').delete().neq('id', ''),
+        db.from('toners').delete().neq('id', ''),
+      ]).then(() => {
+        db.from('orders').insert(DEFAULT_ORDERS.map(orderToDbOrder)).then();
+        db.from('toners').insert(DEFAULT_TONERS.map(tonerToDbToner)).then();
+        db.from('settings').upsert(settingsToDbSettings(DEFAULT_SETTINGS)).then();
+      });
+    }
+
     try {
       localStorage.setItem(STORAGE_KEY_ORDERS, JSON.stringify(DEFAULT_ORDERS));
       localStorage.setItem(STORAGE_KEY_TONERS, JSON.stringify(DEFAULT_TONERS));
       localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(DEFAULT_SETTINGS));
     } catch (err) {
-      console.error('Failed to reset localStorage:', err);
+      console.error(err);
     }
-  };
+  }, []);
 
   // Backup & Restore
-  const exportJson = () => {
+  const exportJson = useCallback(() => {
     const backupData = {
       version: '1.0',
       exportedAt: new Date().toISOString(),
@@ -325,26 +489,41 @@ export function PrintStoreProvider({ children }: { children: React.ReactNode }) 
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
-  };
+  }, [settings, toners, orders]);
 
-  const importJson = (jsonString: string): { success: boolean; error?: string } => {
+  const importJson = useCallback((jsonString: string): { success: boolean; error?: string } => {
     try {
       const parsed = JSON.parse(jsonString);
       if (!parsed || typeof parsed !== 'object') {
         return { success: false, error: 'Ugyldigt JSON format' };
       }
 
+      const db = supabase;
+
       if (Array.isArray(parsed.orders)) {
         setOrders(parsed.orders);
         localStorage.setItem(STORAGE_KEY_ORDERS, JSON.stringify(parsed.orders));
+        if (db) {
+          db.from('orders').delete().neq('id', '').then(() => {
+            db.from('orders').insert(parsed.orders.map(orderToDbOrder)).then();
+          });
+        }
       }
       if (Array.isArray(parsed.toners)) {
         setToners(parsed.toners);
         localStorage.setItem(STORAGE_KEY_TONERS, JSON.stringify(parsed.toners));
+        if (db) {
+          db.from('toners').delete().neq('id', '').then(() => {
+            db.from('toners').insert(parsed.toners.map(tonerToDbToner)).then();
+          });
+        }
       }
       if (parsed.settings && typeof parsed.settings === 'object') {
         setSettings(parsed.settings);
         localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(parsed.settings));
+        if (db) {
+          db.from('settings').upsert(settingsToDbSettings(parsed.settings)).then();
+        }
       }
 
       return { success: true };
@@ -354,9 +533,9 @@ export function PrintStoreProvider({ children }: { children: React.ReactNode }) 
         error: err instanceof Error ? err.message : 'Kunne ikke indlæse filen',
       };
     }
-  };
+  }, []);
 
-  const exportCsv = () => {
+  const exportCsv = useCallback(() => {
     const headers = [
       'Ordre ID',
       'Dato',
@@ -394,7 +573,7 @@ export function PrintStoreProvider({ children }: { children: React.ReactNode }) 
     downloadAnchor.click();
     downloadAnchor.remove();
     URL.revokeObjectURL(url);
-  };
+  }, [orders]);
 
   return (
     <PrintStoreContext.Provider
@@ -404,6 +583,7 @@ export function PrintStoreProvider({ children }: { children: React.ReactNode }) 
         settings,
         kpis,
         isLoaded,
+        isCloudConnected,
         activeToner,
         addOrder,
         updateOrder,

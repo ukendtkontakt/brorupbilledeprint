@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Printer, Plus, Settings, Database, CheckCircle2 } from 'lucide-react';
+import { Printer, Plus, Settings, Database, Cloud, CloudOff } from 'lucide-react';
+import { usePrintStore } from '@/context/PrintStoreContext';
 
 interface HeaderProps {
   onOpenQuickAdd: () => void;
@@ -14,6 +15,8 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSettings,
   onOpenBackup,
 }) => {
+  const { isCloudConnected } = usePrintStore();
+
   return (
     <header className="border-b border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-30 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -30,7 +33,7 @@ export const Header: React.FC<HeaderProps> = ({
                   Billede Print Dashboard
                 </h1>
                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60">
-                  v1.0
+                  v1.1
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -39,20 +42,49 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* Mobile LocalStorage badge */}
-          <div className="flex sm:hidden items-center gap-1.5 text-[11px] text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-1 rounded-full border border-emerald-200/50">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>Gemt</span>
+          {/* Mobile Cloud / Local badge */}
+          <div className="flex sm:hidden items-center gap-1 text-[11px] px-2 py-1 rounded-full border">
+            {isCloudConnected ? (
+              <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
+                <Cloud className="w-3 h-3 text-emerald-500" />
+                <span>Sky-sync</span>
+              </span>
+            ) : (
+              <span className="flex items-center gap-1 text-slate-500 font-medium">
+                <CloudOff className="w-3 h-3 text-slate-400" />
+                <span>Lokal</span>
+              </span>
+            )}
           </div>
         </div>
 
         {/* Action Controls */}
         <div className="flex items-center gap-2 sm:gap-2.5 w-full sm:w-auto justify-end">
           
-          {/* Desktop Auto-save indicator */}
-          <div className="hidden sm:flex items-center gap-1.5 text-xs text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1.5 rounded-lg border border-emerald-200/60 dark:border-emerald-800/50 mr-1">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-            <span>Persistent auto-gemt</span>
+          {/* Desktop Cloud Sync status indicator */}
+          <div
+            className={`hidden sm:flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border mr-1 ${
+              isCloudConnected
+                ? 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200/60 dark:border-emerald-800/50'
+                : 'text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+            }`}
+            title={
+              isCloudConnected
+                ? 'Forbundet til Supabase: Ændringer opdateres live på tværs af PC og mobil!'
+                : 'Kører lokalt i browseren. Tilføj Supabase keys i Vercel for at aktivere realtids-sync overalt.'
+            }
+          >
+            {isCloudConnected ? (
+              <>
+                <Cloud className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                <span className="font-medium">Sky-synkroniseret (PC & Mobil)</span>
+              </>
+            ) : (
+              <>
+                <CloudOff className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <span>Lokal lagring (LocalStorage)</span>
+              </>
+            )}
           </div>
 
           {/* Backup / Export */}
