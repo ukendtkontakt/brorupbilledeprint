@@ -36,8 +36,22 @@ CREATE TABLE IF NOT EXISTS public.settings (
   prints_per_pack INTEGER NOT NULL DEFAULT 108,
   packs_per_purchase INTEGER NOT NULL DEFAULT 2,
   shipping_price NUMERIC NOT NULL DEFAULT 39,
-  printer_cost NUMERIC NOT NULL DEFAULT 1000
+  printer_cost NUMERIC NOT NULL DEFAULT 1000,
+  tier_1_price NUMERIC DEFAULT 8.0,
+  tier_3_price NUMERIC DEFAULT 7.0,
+  tier_5_price NUMERIC DEFAULT 6.0,
+  tier_10_price NUMERIC DEFAULT 5.5,
+  tier_20_price NUMERIC DEFAULT 5.0,
+  contact_group_price NUMERIC DEFAULT 5.0
 );
+
+-- Tilføj kolonner hvis tabellen allerede eksisterer
+ALTER TABLE public.settings ADD COLUMN IF NOT EXISTS tier_1_price NUMERIC DEFAULT 8.0;
+ALTER TABLE public.settings ADD COLUMN IF NOT EXISTS tier_3_price NUMERIC DEFAULT 7.0;
+ALTER TABLE public.settings ADD COLUMN IF NOT EXISTS tier_5_price NUMERIC DEFAULT 6.0;
+ALTER TABLE public.settings ADD COLUMN IF NOT EXISTS tier_10_price NUMERIC DEFAULT 5.5;
+ALTER TABLE public.settings ADD COLUMN IF NOT EXISTS tier_20_price NUMERIC DEFAULT 5.0;
+ALTER TABLE public.settings ADD COLUMN IF NOT EXISTS contact_group_price NUMERIC DEFAULT 5.0;
 
 -- 4. Slå Row Level Security (RLS) til med tilladelse for anon adgang
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;

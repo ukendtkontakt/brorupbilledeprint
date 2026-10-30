@@ -35,6 +35,12 @@ export interface CostSettings {
   packsPerPurchase: number; // e.g. 2 packs
   shippingPrice: number; // e.g. 39 kr.
   printerCost: number; // e.g. 1000 kr.
+  tier1Price?: number; // 1-2 stk
+  tier3Price?: number; // 3-4 stk
+  tier5Price?: number; // 5-9 stk
+  tier10Price?: number; // 10-19 stk
+  tier20Price?: number; // 20+ stk
+  contactGroupPrice?: number; // fast kontaktgruppe takst
 }
 
 export interface KpiData {

@@ -9,17 +9,27 @@ import { CostSettings, KpiData, Order } from '@/types';
  * - >=20 stk: 5 kr./stk
  * - Kontaktgruppe: Fast 5 kr./stk uanset antal
  */
-export function getStandardUnitPrice(quantity: number, isContactGroup: boolean): number {
+export function getStandardUnitPrice(
+  quantity: number,
+  isContactGroup: boolean,
+  settings?: CostSettings
+): number {
   if (isContactGroup) {
-    return 5.0;
+    return settings?.contactGroupPrice ?? 5.0;
   }
 
+  const p1 = settings?.tier1Price ?? 8.0;
+  const p3 = settings?.tier3Price ?? 7.0;
+  const p5 = settings?.tier5Price ?? 6.0;
+  const p10 = settings?.tier10Price ?? 5.5;
+  const p20 = settings?.tier20Price ?? 5.0;
+
   const qty = Math.max(1, Math.floor(quantity || 1));
-  if (qty >= 20) return 5.0;
-  if (qty >= 10) return 5.5;
-  if (qty >= 5) return 6.0;
-  if (qty >= 3) return 7.0;
-  return 8.0;
+  if (qty >= 20) return p20;
+  if (qty >= 10) return p10;
+  if (qty >= 5) return p5;
+  if (qty >= 3) return p3;
+  return p1;
 }
 
 /**

@@ -6,6 +6,12 @@ export const DEFAULT_SETTINGS: CostSettings = {
   packsPerPurchase: 2, // Køb af 2 pakker
   shippingPrice: 39,   // Fragt: 39 kr.
   printerCost: 1000,   // Printer startpris: 1000 kr.
+  tier1Price: 8.0,
+  tier3Price: 7.0,
+  tier5Price: 6.0,
+  tier10Price: 5.5,
+  tier20Price: 5.0,
+  contactGroupPrice: 5.0,
 };
 
 export const DEFAULT_TONERS: Toner[] = [

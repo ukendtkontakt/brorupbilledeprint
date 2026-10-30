@@ -235,7 +235,7 @@ export function PrintStoreProvider({ children }: { children: React.ReactNode }) 
     const unitPrice =
       typeof input.unitPrice === 'number'
         ? input.unitPrice
-        : getStandardUnitPrice(qty, input.isContactGroup);
+        : getStandardUnitPrice(qty, input.isContactGroup, settings);
     const totalPrice =
       typeof input.totalPrice === 'number' ? input.totalPrice : Math.round(qty * unitPrice * 100) / 100;
 
@@ -305,7 +305,7 @@ export function PrintStoreProvider({ children }: { children: React.ReactNode }) 
     }
 
     return newOrder;
-  }, [activeToner, toners]);
+  }, [activeToner, toners, settings]);
 
   const updateOrder = useCallback((updatedOrder: Order) => {
     setOrders((prev) => {
@@ -520,7 +520,23 @@ export function PrintStoreProvider({ children }: { children: React.ReactNode }) 
       const merged = { ...prev, ...newSettings };
       const db = supabase;
       if (db) {
-        db.from('settings').upsert(settingsToDbSettings(merged)).then();
+        const fullPayload = settingsToDbSettings(merged);
+        db.from('settings')
+          .upsert(fullPayload)
+          .then(({ error }) => {
+            if (error) {
+              // Fallback to core columns if tier columns are not yet migrated in Supabase
+              const basicPayload = {
+                id: 'default',
+                paper_pack_price: merged.paperPackPrice,
+                prints_per_pack: merged.printsPerPack,
+                packs_per_purchase: merged.packsPerPurchase,
+                shipping_price: merged.shippingPrice,
+                printer_cost: merged.printerCost,
+              };
+              db.from('settings').upsert(basicPayload).then();
+            }
+          });
       }
       return merged;
     });

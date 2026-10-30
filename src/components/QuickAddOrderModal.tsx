@@ -37,7 +37,7 @@ function QuickAddFormInner({
   initialQuantity,
   initialIsContactGroup,
 }: FormInnerProps) {
-  const { addOrder, toners, activeToner, orders } = usePrintStore();
+  const { addOrder, toners, activeToner, orders, settings } = usePrintStore();
   const { showToast } = useToast();
 
   const [customerName, setCustomerName] = useState('');
@@ -45,7 +45,7 @@ function QuickAddFormInner({
   const [isContactGroup, setIsContactGroup] = useState<boolean>(initialIsContactGroup || false);
 
   // Decimal price string supporting comma e.g. "4,7" or "4.7"
-  const defaultInitialPrice = getStandardUnitPrice(initialQuantity || 1, initialIsContactGroup || false);
+  const defaultInitialPrice = getStandardUnitPrice(initialQuantity || 1, initialIsContactGroup || false, settings);
   const [priceInput, setPriceInput] = useState<string>(() =>
     defaultInitialPrice.toString().replace('.', ',')
   );
@@ -69,7 +69,7 @@ function QuickAddFormInner({
   // Parse price safely from comma or dot input
   const parsedUnitPrice = (() => {
     if (!isManualPrice) {
-      return getStandardUnitPrice(quantity, isContactGroup);
+      return getStandardUnitPrice(quantity, isContactGroup, settings);
     }
     const clean = priceInput.replace(',', '.').trim();
     const n = parseFloat(clean);
@@ -83,7 +83,7 @@ function QuickAddFormInner({
     const validQty = Math.max(1, newQty);
     setQuantity(validQty);
     if (!isManualPrice) {
-      const autoPrice = getStandardUnitPrice(validQty, isContactGroup);
+      const autoPrice = getStandardUnitPrice(validQty, isContactGroup, settings);
       setPriceInput(autoPrice.toString().replace('.', ','));
     }
 
@@ -96,7 +96,7 @@ function QuickAddFormInner({
   const handleContactGroupToggle = (checked: boolean) => {
     setIsContactGroup(checked);
     setIsManualPrice(false);
-    const autoPrice = getStandardUnitPrice(quantity, checked);
+    const autoPrice = getStandardUnitPrice(quantity, checked, settings);
     setPriceInput(autoPrice.toString().replace('.', ','));
   };
 
@@ -107,7 +107,7 @@ function QuickAddFormInner({
 
   const resetToAutoPrice = () => {
     setIsManualPrice(false);
-    const autoPrice = getStandardUnitPrice(quantity, isContactGroup);
+    const autoPrice = getStandardUnitPrice(quantity, isContactGroup, settings);
     setPriceInput(autoPrice.toString().replace('.', ','));
     showToast('Pris nulstillet til standard takst');
   };

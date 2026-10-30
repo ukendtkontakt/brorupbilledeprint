@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Tag, Users, Calculator, Info } from 'lucide-react';
 import { getStandardUnitPrice, formatCurrency } from '@/utils/calculations';
+import { usePrintStore } from '@/context/PrintStoreContext';
 
 interface StandardPricingCardProps {
   onSelectTier?: (quantity: number, isContactGroup: boolean) => void;
@@ -11,18 +12,26 @@ interface StandardPricingCardProps {
 export const StandardPricingCard: React.FC<StandardPricingCardProps> = ({
   onSelectTier,
 }) => {
+  const { settings } = usePrintStore();
   const [testQty, setTestQty] = useState<number>(3);
   const [testIsContactGroup, setTestIsContactGroup] = useState<boolean>(false);
 
-  const testUnitPrice = getStandardUnitPrice(testQty, testIsContactGroup);
+  const testUnitPrice = getStandardUnitPrice(testQty, testIsContactGroup, settings);
   const testTotal = testQty * testUnitPrice;
 
+  const t1 = settings.tier1Price ?? 8.0;
+  const t3 = settings.tier3Price ?? 7.0;
+  const t5 = settings.tier5Price ?? 6.0;
+  const t10 = settings.tier10Price ?? 5.5;
+  const t20 = settings.tier20Price ?? 5.0;
+  const contactPrice = settings.contactGroupPrice ?? 5.0;
+
   const tiers = [
-    { qtyLabel: '1 stk', unit: 8.0, total: 8.0, threshold: '1–2 stk' },
-    { qtyLabel: '3 stk', unit: 7.0, total: 21.0, threshold: '3–4 stk' },
-    { qtyLabel: '5 stk', unit: 6.0, total: 30.0, threshold: '5–9 stk' },
-    { qtyLabel: '10 stk', unit: 5.5, total: 55.0, threshold: '10–19 stk' },
-    { qtyLabel: '≥ 20 stk', unit: 5.0, total: 100.0, threshold: '20+ stk' },
+    { qtyLabel: '1 stk', unit: t1, total: Math.round(1 * t1 * 100) / 100, threshold: '1–2 stk' },
+    { qtyLabel: '3 stk', unit: t3, total: Math.round(3 * t3 * 100) / 100, threshold: '3–4 stk' },
+    { qtyLabel: '5 stk', unit: t5, total: Math.round(5 * t5 * 100) / 100, threshold: '5–9 stk' },
+    { qtyLabel: '10 stk', unit: t10, total: Math.round(10 * t10 * 100) / 100, threshold: '10–19 stk' },
+    { qtyLabel: '≥ 20 stk', unit: t20, total: Math.round(20 * t20 * 100) / 100, threshold: '20+ stk' },
   ];
 
   return (
@@ -46,7 +55,7 @@ export const StandardPricingCard: React.FC<StandardPricingCardProps> = ({
 
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60">
             <Users className="w-3.5 h-3.5" />
-            <span>Kontaktgruppe: 5 kr./stk</span>
+            <span>Kontaktgruppe: {contactPrice.toString().replace('.', ',')} kr./stk</span>
           </span>
         </div>
 
@@ -65,7 +74,7 @@ export const StandardPricingCard: React.FC<StandardPricingCardProps> = ({
                 {tier.unit.toString().replace('.', ',')} kr.
               </div>
               <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                i alt {tier.total} kr.
+                i alt {tier.total.toString().replace('.', ',')} kr.
               </div>
             </div>
           ))}
@@ -74,7 +83,7 @@ export const StandardPricingCard: React.FC<StandardPricingCardProps> = ({
         <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/40 p-2 rounded-lg">
           <Info className="w-3.5 h-3.5 text-blue-500 shrink-0" />
           <span>
-            <strong>Kontaktgruppe-regel:</strong> Sæt kryds i kontaktgruppe for altid at låse prisen til fast 5,00 kr./stk uanset mængde. Prisen kan også overskrives frit manuelt.
+            <strong>Kontaktgruppe-regel:</strong> Sæt kryds i kontaktgruppe for altid at låse prisen til fast {contactPrice.toString().replace('.', ',')} kr./stk uanset mængde. Priserne kan ændres i Indstillinger.
           </span>
         </div>
       </div>
