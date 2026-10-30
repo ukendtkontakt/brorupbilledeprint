@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react';
-import { CostSettings, KpiData, Order, Toner, TonerStatus } from '@/types';
+import { CostSettings, KpiData, Order, OrderTonerBreakdown, Toner, TonerStatus } from '@/types';
 import { DEFAULT_ORDERS, DEFAULT_SETTINGS, DEFAULT_TONERS } from '@/utils/initialData';
 import { calculateKpis, getStandardUnitPrice } from '@/utils/calculations';
 import { supabase, isSupabaseConfigured } from '@/utils/supabase';
@@ -25,6 +25,8 @@ interface AddOrderInput {
   isPaid: boolean;
   isContactGroup: boolean;
   tonerId?: string; // If omitted, uses current active toner
+  tonerBreakdown?: OrderTonerBreakdown[];
+  tonerNameText?: string;
   date?: string;
   notes?: string;
 }
@@ -237,9 +239,31 @@ export function PrintStoreProvider({ children }: { children: React.ReactNode }) 
     const totalPrice =
       typeof input.totalPrice === 'number' ? input.totalPrice : Math.round(qty * unitPrice * 100) / 100;
 
-    const targetTonerId = input.tonerId || (activeToner ? activeToner.id : 'toner-2');
-    const targetToner = toners.find((t) => t.id === targetTonerId);
-    const tonerLabel = targetToner ? `${targetToner.name} (${qty} stk)` : `Toner (${qty} stk)`;
+    // Check if breakdown was provided
+    const hasCustomBreakdown = Array.isArray(input.tonerBreakdown) && input.tonerBreakdown.length > 0;
+    let finalBreakdown: OrderTonerBreakdown[] = [];
+    let tonerLabel = '';
+
+    if (hasCustomBreakdown) {
+      finalBreakdown = input.tonerBreakdown!;
+      if (input.tonerNameText) {
+        tonerLabel = input.tonerNameText;
+      } else {
+        tonerLabel = finalBreakdown
+          .map((b) => {
+            const t = toners.find((item) => item.id === b.tonerId);
+            return `${t ? t.name : 'Toner'} (${b.count} stk)`;
+          })
+          .join(' / ');
+      }
+    } else {
+      const targetTonerId = input.tonerId || (activeToner ? activeToner.id : 'toner-2');
+      const targetToner = toners.find((t) => t.id === targetTonerId);
+      tonerLabel = targetToner ? `${targetToner.name} (${qty} stk)` : `Toner (${qty} stk)`;
+      if (targetToner) {
+        finalBreakdown = [{ tonerId: targetToner.id, count: qty }];
+      }
+    }
 
     const newOrder: Order = {
       id: `ord-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -250,7 +274,7 @@ export function PrintStoreProvider({ children }: { children: React.ReactNode }) 
       isPaid: input.isPaid,
       isContactGroup: input.isContactGroup,
       tonerNameText: tonerLabel,
-      tonerBreakdown: targetToner ? [{ tonerId: targetToner.id, count: qty }] : undefined,
+      tonerBreakdown: finalBreakdown.length > 0 ? finalBreakdown : undefined,
       date: input.date || new Date().toISOString().split('T')[0],
       notes: input.notes?.trim() || '',
       createdAt: Date.now(),
@@ -258,16 +282,22 @@ export function PrintStoreProvider({ children }: { children: React.ReactNode }) 
 
     setOrders((prev) => [newOrder, ...prev]);
 
-    // Update target toner count
+    // Update target toner count(s)
     const db = supabase;
-    if (targetToner) {
-      const updatedToner = { ...targetToner, printedCount: targetToner.printedCount + qty };
-      setToners((prev) =>
-        prev.map((t) => (t.id === targetToner.id ? updatedToner : t))
-      );
-      if (db) {
-        db.from('toners').update(tonerToDbToner(updatedToner)).eq('id', updatedToner.id).then();
-      }
+    if (finalBreakdown.length > 0) {
+      setToners((prev) => {
+        return prev.map((t) => {
+          const alloc = finalBreakdown.find((b) => b.tonerId === t.id);
+          if (alloc && alloc.count > 0) {
+            const updated = { ...t, printedCount: t.printedCount + alloc.count };
+            if (db) {
+              db.from('toners').update(tonerToDbToner(updated)).eq('id', updated.id).then();
+            }
+            return updated;
+          }
+          return t;
+        });
+      });
     }
 
     if (db) {
@@ -278,9 +308,43 @@ export function PrintStoreProvider({ children }: { children: React.ReactNode }) 
   }, [activeToner, toners]);
 
   const updateOrder = useCallback((updatedOrder: Order) => {
-    setOrders((prev) =>
-      prev.map((ord) => (ord.id === updatedOrder.id ? updatedOrder : ord))
-    );
+    setOrders((prev) => {
+      const oldOrder = prev.find((ord) => ord.id === updatedOrder.id);
+      if (oldOrder) {
+        // Reconcile toner allocations
+        const oldBreakdown = oldOrder.tonerBreakdown || [];
+        const newBreakdown = updatedOrder.tonerBreakdown || [];
+
+        const netChanges: Record<string, number> = {};
+        for (const item of oldBreakdown) {
+          netChanges[item.tonerId] = (netChanges[item.tonerId] || 0) - item.count;
+        }
+        for (const item of newBreakdown) {
+          netChanges[item.tonerId] = (netChanges[item.tonerId] || 0) + item.count;
+        }
+
+        const tonersToUpdate = Object.entries(netChanges).filter(([, diff]) => diff !== 0);
+        if (tonersToUpdate.length > 0) {
+          const db = supabase;
+          setToners((prevToners) => {
+            return prevToners.map((t) => {
+              const diff = netChanges[t.id];
+              if (diff) {
+                const updated = { ...t, printedCount: Math.max(0, t.printedCount + diff) };
+                if (db) {
+                  db.from('toners').update(tonerToDbToner(updated)).eq('id', updated.id).then();
+                }
+                return updated;
+              }
+              return t;
+            });
+          });
+        }
+      }
+
+      return prev.map((ord) => (ord.id === updatedOrder.id ? updatedOrder : ord));
+    });
+
     const db = supabase;
     if (db) {
       db.from('orders').update(orderToDbOrder(updatedOrder)).eq('id', updatedOrder.id).then();
@@ -288,7 +352,27 @@ export function PrintStoreProvider({ children }: { children: React.ReactNode }) 
   }, []);
 
   const deleteOrder = useCallback((id: string) => {
-    setOrders((prev) => prev.filter((ord) => ord.id !== id));
+    setOrders((prev) => {
+      const target = prev.find((ord) => ord.id === id);
+      if (target && target.tonerBreakdown && target.tonerBreakdown.length > 0) {
+        const db = supabase;
+        setToners((prevToners) => {
+          return prevToners.map((t) => {
+            const alloc = target.tonerBreakdown?.find((b) => b.tonerId === t.id);
+            if (alloc && alloc.count > 0) {
+              const updated = { ...t, printedCount: Math.max(0, t.printedCount - alloc.count) };
+              if (db) {
+                db.from('toners').update(tonerToDbToner(updated)).eq('id', updated.id).then();
+              }
+              return updated;
+            }
+            return t;
+          });
+        });
+      }
+      return prev.filter((ord) => ord.id !== id);
+    });
+
     const db = supabase;
     if (db) {
       db.from('orders').delete().eq('id', id).then();
