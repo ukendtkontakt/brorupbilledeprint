@@ -95,19 +95,19 @@ export function tonerToDbToner(toner: Toner): DbToner {
   };
 }
 
-export function dbSettingsToSettings(row: DbSettings): CostSettings {
+export function dbSettingsToSettings(row: DbSettings, existing?: CostSettings): CostSettings {
   return {
     paperPackPrice: Number(row.paper_pack_price),
     printsPerPack: Number(row.prints_per_pack),
     packsPerPurchase: Number(row.packs_per_purchase),
     shippingPrice: Number(row.shipping_price),
     printerCost: Number(row.printer_cost),
-    tier1Price: row.tier_1_price !== undefined && row.tier_1_price !== null ? Number(row.tier_1_price) : 8.0,
-    tier3Price: row.tier_3_price !== undefined && row.tier_3_price !== null ? Number(row.tier_3_price) : 7.0,
-    tier5Price: row.tier_5_price !== undefined && row.tier_5_price !== null ? Number(row.tier_5_price) : 6.0,
-    tier10Price: row.tier_10_price !== undefined && row.tier_10_price !== null ? Number(row.tier_10_price) : 5.5,
-    tier20Price: row.tier_20_price !== undefined && row.tier_20_price !== null ? Number(row.tier_20_price) : 5.0,
-    contactGroupPrice: row.contact_group_price !== undefined && row.contact_group_price !== null ? Number(row.contact_group_price) : 5.0,
+    tier1Price: row.tier_1_price !== undefined && row.tier_1_price !== null ? Number(row.tier_1_price) : (existing?.tier1Price ?? 8.0),
+    tier3Price: row.tier_3_price !== undefined && row.tier_3_price !== null ? Number(row.tier_3_price) : (existing?.tier3Price ?? 7.0),
+    tier5Price: row.tier_5_price !== undefined && row.tier_5_price !== null ? Number(row.tier_5_price) : (existing?.tier5Price ?? 6.0),
+    tier10Price: row.tier_10_price !== undefined && row.tier_10_price !== null ? Number(row.tier_10_price) : (existing?.tier10Price ?? 5.5),
+    tier20Price: row.tier_20_price !== undefined && row.tier_20_price !== null ? Number(row.tier_20_price) : (existing?.tier20Price ?? 5.0),
+    contactGroupPrice: row.contact_group_price !== undefined && row.contact_group_price !== null ? Number(row.contact_group_price) : (existing?.contactGroupPrice ?? 5.0),
   };
 }
 

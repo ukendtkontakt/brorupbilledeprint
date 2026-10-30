@@ -87,6 +87,16 @@ export function PrintStoreProvider({ children }: { children: React.ReactNode }) 
       // 1. Try loading from Supabase if configured
       if (db) {
         try {
+          const storedSettings = localStorage.getItem(STORAGE_KEY_SETTINGS);
+          let cachedSettings: CostSettings | undefined = undefined;
+          if (storedSettings) {
+            try {
+              cachedSettings = JSON.parse(storedSettings);
+            } catch (e) {
+              console.error(e);
+            }
+          }
+
           const [ordersRes, tonersRes, settingsRes] = await Promise.all([
             db.from('orders').select('*').order('created_at', { ascending: false }),
             db.from('toners').select('*').order('id', { ascending: true }),
@@ -101,7 +111,7 @@ export function PrintStoreProvider({ children }: { children: React.ReactNode }) 
               setToners(tonersRes.data.map((r) => dbTonerToToner(r as DbToner)));
             }
             if (settingsRes.data) {
-              setSettings(dbSettingsToSettings(settingsRes.data as DbSettings));
+              setSettings(dbSettingsToSettings(settingsRes.data as DbSettings, cachedSettings));
             }
           }
         } catch (err) {
@@ -180,7 +190,7 @@ export function PrintStoreProvider({ children }: { children: React.ReactNode }) 
         { event: '*', schema: 'public', table: 'settings' },
         (payload) => {
           if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
-            setSettings(dbSettingsToSettings(payload.new as DbSettings));
+            setSettings((prev) => dbSettingsToSettings(payload.new as DbSettings, prev));
           }
         }
       )
