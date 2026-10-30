@@ -204,15 +204,15 @@ function EditOrderFormInner({ order, onClose }: EditFormInnerProps) {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 border border-slate-200 dark:border-slate-800 shadow-2xl relative max-h-[92vh] overflow-y-auto">
-      <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+    <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 border border-stone-200 shadow-xl relative max-h-[92vh] overflow-y-auto">
+      <div className="flex items-center justify-between pb-3.5 border-b border-stone-100">
+        <h3 className="text-base sm:text-lg font-bold text-stone-900">
           Rediger ordre
         </h3>
         <button
           onClick={onClose}
           type="button"
-          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
@@ -221,7 +221,7 @@ function EditOrderFormInner({ order, onClose }: EditFormInnerProps) {
       <form onSubmit={handleSubmit} className="mt-4 space-y-4">
         {/* Customer Name */}
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">
             Kunde Navn
           </label>
           <input
@@ -229,14 +229,14 @@ function EditOrderFormInner({ order, onClose }: EditFormInnerProps) {
             required
             value={customerName}
             onChange={(e) => setCustomerName(e.target.value)}
-            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-semibold focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 bg-white text-stone-900 text-sm font-semibold focus:outline-hidden focus:border-stone-500"
           />
         </div>
 
         {/* Quantity and Unit Price (supporting comma e.g. "4,7") */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">
               Antal prints
             </label>
             <input
@@ -245,12 +245,12 @@ function EditOrderFormInner({ order, onClose }: EditFormInnerProps) {
               required
               value={quantity}
               onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-bold focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 bg-white text-stone-900 text-sm font-bold focus:outline-hidden focus:border-stone-500 tabular-nums"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">
               Stk. pris (kr.)
             </label>
             <input
@@ -259,85 +259,85 @@ function EditOrderFormInner({ order, onClose }: EditFormInnerProps) {
               value={priceInput}
               onChange={(e) => setPriceInput(e.target.value)}
               placeholder="F.eks. 4,7 eller 5"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-bold focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 bg-white text-stone-900 text-sm font-bold focus:outline-hidden focus:border-stone-500 tabular-nums"
             />
-            <span className="text-[10px] text-slate-400 mt-0.5 block">
+            <span className="text-[10px] text-stone-400 mt-0.5 block">
               Kan skrives med komma (f.eks. 4,7)
             </span>
           </div>
         </div>
 
         {/* Kontaktgruppe toggle */}
-        <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700">
-          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-            Kontaktgruppe (5 kr./stk takst)
+        <div className="flex items-center justify-between p-2.5 rounded-xl bg-stone-50 border border-stone-200">
+          <span className="text-xs font-semibold text-stone-700">
+            Kontaktgruppe (fast særpris)
           </span>
           <input
             type="checkbox"
             checked={isContactGroup}
             onChange={(e) => setIsContactGroup(e.target.checked)}
-            className="rounded text-blue-600 w-4 h-4"
+            className="rounded text-stone-900 w-4 h-4 accent-stone-900 cursor-pointer"
           />
         </div>
 
         {/* Total Price */}
-        <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 flex items-center justify-between">
-          <span className="text-xs font-semibold text-blue-900 dark:text-blue-200">
+        <div className="p-3 rounded-xl bg-stone-100 border border-stone-200 flex items-center justify-between">
+          <span className="text-xs font-medium text-stone-700">
             Samlet pris i alt:
           </span>
-          <span className="text-base font-black text-blue-700 dark:text-blue-300">
+          <span className="text-base font-bold text-stone-900 tabular-nums">
             {formatCurrency(totalPrice)}
           </span>
         </div>
 
         {/* Payment Toggle */}
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">
             Betalt status
           </label>
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => setIsPaid(true)}
-              className={`py-2 px-3 rounded-xl border font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
+              className={`py-2 px-3 rounded-xl border font-semibold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                 isPaid
-                  ? 'bg-emerald-600 text-white border-emerald-600'
-                  : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                  ? 'bg-emerald-800 text-white border-emerald-800'
+                  : 'bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100'
               }`}
             >
-              <CheckCircle2 className="w-4 h-4" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-300" />
               <span>Ja (Betalt)</span>
             </button>
             <button
               type="button"
               onClick={() => setIsPaid(false)}
-              className={`py-2 px-3 rounded-xl border font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
+              className={`py-2 px-3 rounded-xl border font-semibold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                 !isPaid
-                  ? 'bg-rose-600 text-white border-rose-600'
-                  : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                  ? 'bg-rose-800 text-white border-rose-800'
+                  : 'bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100'
               }`}
             >
-              <AlertCircle className="w-4 h-4" />
-              <span>Nej (Mangler)</span>
+              <AlertCircle className="w-4 h-4 text-rose-300" />
+              <span>Nej (Udestående)</span>
             </button>
           </div>
         </div>
 
         {/* Toner Allocation Section */}
-        <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-3">
+        <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 space-y-3">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-blue-600" />
+            <label className="text-xs font-semibold uppercase tracking-wider text-stone-700 flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 text-stone-500" />
               <span>Toner-fordeling</span>
             </label>
 
             <button
               type="button"
               onClick={() => handleToggleMultiToner(!isMultiToner)}
-              className={`text-xs px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1.5 transition-all border ${
+              className={`text-xs px-2.5 py-1 rounded-lg font-medium flex items-center gap-1.5 transition-all border cursor-pointer ${
                 isMultiToner
-                  ? 'bg-purple-600 text-white border-purple-600 shadow-xs'
-                  : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-100'
+                  ? 'bg-stone-900 text-white border-stone-900 shadow-2xs'
+                  : 'bg-white text-stone-700 border-stone-300 hover:bg-stone-100'
               }`}
             >
               <Split className="w-3 h-3" />
@@ -350,7 +350,7 @@ function EditOrderFormInner({ order, onClose }: EditFormInnerProps) {
               <select
                 value={singleTonerId}
                 onChange={(e) => setSingleTonerId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-semibold focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 rounded-xl border border-stone-300 bg-white text-stone-900 text-xs font-medium focus:outline-hidden focus:border-stone-500"
               >
                 {toners.map((t) => (
                   <option key={t.id} value={t.id}>
@@ -362,14 +362,14 @@ function EditOrderFormInner({ order, onClose }: EditFormInnerProps) {
           ) : (
             <div className="space-y-2.5">
               {tonerAllocations.map((alloc, idx) => (
-                <div key={idx} className="flex items-center gap-2 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700">
-                  <span className="text-xs font-bold text-slate-400 w-5 text-center">
+                <div key={idx} className="flex items-center gap-2 bg-white p-2 rounded-xl border border-stone-200">
+                  <span className="text-xs font-semibold text-stone-400 w-5 text-center">
                     #{idx + 1}
                   </span>
                   <select
                     value={alloc.tonerId}
                     onChange={(e) => handleUpdateAllocation(idx, 'tonerId', e.target.value)}
-                    className="flex-1 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white text-xs font-medium focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 px-2.5 py-1.5 rounded-lg border border-stone-300 bg-stone-50 text-stone-900 text-xs font-medium focus:outline-hidden focus:border-stone-500"
                   >
                     {toners.map((t) => (
                       <option key={t.id} value={t.id}>
@@ -385,16 +385,16 @@ function EditOrderFormInner({ order, onClose }: EditFormInnerProps) {
                       max={quantity}
                       value={alloc.count}
                       onChange={(e) => handleUpdateAllocation(idx, 'count', e.target.value)}
-                      className="w-16 px-2 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white text-xs font-bold text-center"
+                      className="w-16 px-2 py-1.5 rounded-lg border border-stone-300 bg-stone-50 text-stone-900 text-xs font-bold text-center tabular-nums"
                     />
-                    <span className="text-xs text-slate-400">stk</span>
+                    <span className="text-xs text-stone-400">stk</span>
                   </div>
 
                   {allocationDiff !== 0 && (
                     <button
                       type="button"
                       onClick={() => handleFillRemainderOnRow(idx)}
-                      className="px-2 py-1 rounded bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-300 text-[10px] font-bold hover:bg-blue-100 whitespace-nowrap"
+                      className="px-2 py-1 rounded-lg bg-stone-100 text-stone-800 text-[10px] font-bold hover:bg-stone-200 whitespace-nowrap cursor-pointer"
                       title="Læg manglende prints til her"
                     >
                       +{allocationDiff}
@@ -405,7 +405,7 @@ function EditOrderFormInner({ order, onClose }: EditFormInnerProps) {
                     <button
                       type="button"
                       onClick={() => handleRemoveTonerRow(idx)}
-                      className="p-1 rounded text-slate-400 hover:text-rose-500"
+                      className="p-1 rounded-lg text-stone-400 hover:text-rose-700 cursor-pointer"
                       title="Fjern toner"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -414,11 +414,11 @@ function EditOrderFormInner({ order, onClose }: EditFormInnerProps) {
                 </div>
               ))}
 
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-200/60 dark:border-slate-700/60">
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-stone-200">
                 <button
                   type="button"
                   onClick={handleAddTonerRow}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-stone-700 hover:text-stone-900 underline cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Tilføj toner mere</span>
@@ -426,16 +426,16 @@ function EditOrderFormInner({ order, onClose }: EditFormInnerProps) {
 
                 <div className="text-xs">
                   {allocationDiff === 0 ? (
-                    <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-md border border-emerald-200/60">
-                      <Check className="w-3.5 h-3.5" />
+                    <span className="inline-flex items-center gap-1 text-emerald-800 font-medium bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                      <Check className="w-3.5 h-3.5 text-emerald-600" />
                       <span>Alle {quantity} prints fordelt</span>
                     </span>
                   ) : allocationDiff > 0 ? (
-                    <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 font-bold bg-amber-50 dark:bg-amber-950/50 px-2 py-0.5 rounded-md border border-amber-200/60">
+                    <span className="inline-flex items-center gap-1 text-amber-800 font-medium bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
                       <span>Mangler {allocationDiff} stk</span>
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-950/50 px-2 py-0.5 rounded-md border border-rose-200/60">
+                    <span className="inline-flex items-center gap-1 text-rose-800 font-medium bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200">
                       <span>{Math.abs(allocationDiff)} stk for meget</span>
                     </span>
                   )}
@@ -448,37 +448,37 @@ function EditOrderFormInner({ order, onClose }: EditFormInnerProps) {
         {/* Date and Notes */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1 flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5" />
+            <label className="block text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1 flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5 text-stone-400" />
               <span>Dato</span>
             </label>
             <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium"
+              className="w-full px-3 py-2 rounded-xl border border-stone-300 bg-white text-stone-900 text-xs font-medium focus:outline-hidden focus:border-stone-500"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">
               Noter
             </label>
             <input
               type="text"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs"
+              className="w-full px-3 py-2 rounded-xl border border-stone-300 bg-white text-stone-900 text-xs focus:outline-hidden focus:border-stone-500"
             />
           </div>
         </div>
 
         {/* Actions */}
-        <div className="pt-3 flex items-center justify-between gap-2 border-t border-slate-100 dark:border-slate-800">
+        <div className="pt-3 flex items-center justify-between gap-2 border-t border-stone-100">
           <button
             type="button"
             onClick={handleDelete}
-            className="px-3 py-2.5 rounded-xl text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs font-bold flex items-center gap-1 transition-colors"
+            className="px-3 py-2.5 rounded-xl text-rose-700 hover:bg-rose-50 text-xs font-medium flex items-center gap-1 transition-colors cursor-pointer"
           >
             <Trash2 className="w-4 h-4" />
             <span>Slet ordre</span>
@@ -487,13 +487,13 @@ function EditOrderFormInner({ order, onClose }: EditFormInnerProps) {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="px-4 py-2.5 rounded-xl text-stone-600 text-xs font-medium hover:bg-stone-100 transition-colors cursor-pointer"
             >
               Annuller
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm transition-all"
+              className="px-5 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-100 text-xs font-medium shadow-xs transition-all cursor-pointer active:scale-[0.99]"
             >
               Gem ændringer
             </button>
@@ -512,7 +512,7 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
   if (!isOpen || !order) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/40 backdrop-blur-xs animate-in fade-in duration-150">
       <EditOrderFormInner key={order.id} order={order} onClose={onClose} />
     </div>
   );

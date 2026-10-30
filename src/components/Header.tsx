@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Printer, Plus, Settings, Database, Cloud, CloudOff } from 'lucide-react';
+import { Printer, Plus, Settings, Database, CloudOff } from 'lucide-react';
 import { usePrintStore } from '@/context/PrintStoreContext';
 
 interface HeaderProps {
@@ -18,40 +18,40 @@ export const Header: React.FC<HeaderProps> = ({
   const { isCloudConnected } = usePrintStore();
 
   return (
-    <header className="border-b border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-30 transition-colors">
+    <header className="border-b border-stone-200/80 bg-[#FAF8F5]/90 backdrop-blur-md sticky top-0 z-30 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-4">
         
         {/* Brand & Title */}
         <div className="flex items-center gap-3.5 w-full sm:w-auto justify-between sm:justify-start">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-blue-600 to-cyan-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20 ring-1 ring-white/20">
-              <Printer className="w-5 h-5" />
+            <div className="w-9 h-9 rounded-xl bg-stone-900 flex items-center justify-center text-stone-100 shadow-xs">
+              <Printer className="w-4.5 h-4.5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
-                  Billede Print Dashboard
+                <h1 className="text-base sm:text-lg font-bold text-stone-900 tracking-tight">
+                  Billede Print
                 </h1>
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60">
-                  v1.1
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-stone-100 text-stone-600 border border-stone-200/80">
+                  Værksted
                 </span>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Administration, tonerforbrug & afbetalings-tracker
+              <p className="text-xs text-stone-500">
+                Regnskab, toner-oversigt & afbetaling
               </p>
             </div>
           </div>
 
           {/* Mobile Cloud / Local badge */}
-          <div className="flex sm:hidden items-center gap-1 text-[11px] px-2 py-1 rounded-full border">
+          <div className="flex sm:hidden items-center gap-1 text-[11px] px-2.5 py-1 rounded-full border border-stone-200 bg-white">
             {isCloudConnected ? (
-              <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
-                <Cloud className="w-3 h-3 text-emerald-500" />
+              <span className="flex items-center gap-1.5 text-emerald-800 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
                 <span>Sky-sync</span>
               </span>
             ) : (
-              <span className="flex items-center gap-1 text-slate-500 font-medium">
-                <CloudOff className="w-3 h-3 text-slate-400" />
+              <span className="flex items-center gap-1.5 text-stone-500 font-medium">
+                <CloudOff className="w-3 h-3 text-stone-400" />
                 <span>Lokal</span>
               </span>
             )}
@@ -63,10 +63,10 @@ export const Header: React.FC<HeaderProps> = ({
           
           {/* Desktop Cloud Sync status indicator */}
           <div
-            className={`hidden sm:flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border mr-1 ${
+            className={`hidden sm:flex items-center gap-2 text-xs px-3 py-1.5 rounded-xl border mr-1 ${
               isCloudConnected
-                ? 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200/60 dark:border-emerald-800/50'
-                : 'text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+                ? 'text-emerald-800 bg-emerald-50/70 border-emerald-200/70'
+                : 'text-stone-600 bg-stone-100/80 border-stone-200'
             }`}
             title={
               isCloudConnected
@@ -76,12 +76,12 @@ export const Header: React.FC<HeaderProps> = ({
           >
             {isCloudConnected ? (
               <>
-                <Cloud className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
                 <span className="font-medium">Sky-synkroniseret (PC & Mobil)</span>
               </>
             ) : (
               <>
-                <CloudOff className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <CloudOff className="w-3.5 h-3.5 text-stone-400 shrink-0" />
                 <span>Lokal lagring (LocalStorage)</span>
               </>
             )}
@@ -91,22 +91,22 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onOpenBackup}
             type="button"
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-medium rounded-lg text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-medium rounded-xl text-stone-700 bg-white hover:bg-stone-50 hover:border-stone-300 transition-colors border border-stone-200/80 shadow-2xs cursor-pointer"
             title="Import/Eksport af data, CSV og backup"
           >
-            <Database className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+            <Database className="w-3.5 h-3.5 text-stone-500" />
             <span className="hidden md:inline">Data & Backup</span>
-            <span className="md:hidden">Backup</span>
+            <span className="md:hidden">Data</span>
           </button>
 
           {/* Settings button */}
           <button
             onClick={onOpenSettings}
             type="button"
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-medium rounded-lg text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-medium rounded-xl text-stone-700 bg-white hover:bg-stone-50 hover:border-stone-300 transition-colors border border-stone-200/80 shadow-2xs cursor-pointer"
             title="Omkostnings-indstillinger & formler"
           >
-            <Settings className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+            <Settings className="w-3.5 h-3.5 text-stone-500" />
             <span className="hidden md:inline">Indstillinger</span>
             <span className="md:hidden">Priser</span>
           </button>
@@ -115,7 +115,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onOpenQuickAdd}
             type="button"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-lg text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-sm shadow-blue-500/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-medium rounded-xl text-stone-100 bg-stone-900 hover:bg-stone-800 transition-all active:scale-[0.98] shadow-xs cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Opret ordre</span>

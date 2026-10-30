@@ -51,24 +51,24 @@ export const TonerTracker: React.FC = () => {
   const totalPrintsAcrossToners = toners.reduce((acc, t) => acc + t.printedCount, 0);
 
   return (
-    <section className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+    <section className="bg-white rounded-2xl p-5 sm:p-6 border border-stone-200/80 shadow-2xs">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800 gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-stone-100 gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center">
-            <Layers className="w-5 h-5" />
+          <div className="w-8 h-8 rounded-lg bg-stone-100 text-stone-700 flex items-center justify-center">
+            <Layers className="w-4 h-4" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              <h3 className="text-sm font-bold text-stone-900">
                 Toner-Tracker & Forbrug
               </h3>
-              <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+              <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-stone-100 text-stone-600">
                 {totalPrintsAcrossToners} prints logget
               </span>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Styr patroner & bånd. Nye ordrer tilføjes automatisk til den aktive toner.
+            <p className="text-xs text-stone-500">
+              Nye ordrer tilføjes automatisk til den aktive toner
             </p>
           </div>
         </div>
@@ -79,7 +79,7 @@ export const TonerTracker: React.FC = () => {
             showToast('Ny toner tilføjet til oversigten');
           }}
           type="button"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 self-start sm:self-auto"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl text-stone-700 bg-white hover:bg-stone-50 hover:border-stone-300 transition-colors border border-stone-200/80 shadow-2xs self-start sm:self-auto cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Tilføj ny toner</span>
@@ -98,38 +98,38 @@ export const TonerTracker: React.FC = () => {
           return (
             <div
               key={toner.id}
-              className={`rounded-2xl p-4 border transition-all relative overflow-hidden flex flex-col justify-between ${
+              className={`rounded-2xl p-4.5 border transition-all relative flex flex-col justify-between ${
                 isFinished
-                  ? 'bg-rose-50/90 dark:bg-rose-950/40 border-rose-300 dark:border-rose-900/70 shadow-sm'
+                  ? 'bg-[#FDF7F5] border-rose-200/90 shadow-2xs'
                   : isActive
-                  ? 'bg-gradient-to-b from-blue-50/90 to-indigo-50/50 dark:from-slate-800 dark:to-slate-900 border-blue-400 dark:border-blue-600 shadow-md ring-2 ring-blue-500/20'
-                  : 'bg-slate-50/70 dark:bg-slate-800/40 border-slate-200/80 dark:border-slate-800'
+                  ? 'bg-[#F4F7F4] border-emerald-300 shadow-2xs ring-1 ring-emerald-300/40'
+                  : 'bg-stone-50/70 border-stone-200/80'
               }`}
             >
               <div>
                 {/* Status Badges */}
                 <div className="flex items-center justify-between gap-2 mb-3">
-                  <div className="font-bold text-slate-900 dark:text-white text-base">
+                  <div className="font-bold text-stone-900 text-base">
                     {toner.name}
                   </div>
 
                   {isFinished && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-600 text-white shadow-xs">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-700 text-white shadow-2xs">
                       <AlertOctagon className="w-3 h-3" />
                       <span>Færdig (Rød)</span>
                     </span>
                   )}
 
                   {isActive && (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-600 text-white shadow-xs animate-pulse">
-                      <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
-                      <span>Aktiv nu</span>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-800 text-white shadow-2xs">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-200"></span>
+                      <span>Aktiv</span>
                     </span>
                   )}
 
                   {isReady && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
-                      <Clock className="w-3 h-3" />
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-stone-200/80 text-stone-600">
+                      <Clock className="w-3 h-3 text-stone-500" />
                       <span>Klar</span>
                     </span>
                   )}
@@ -137,22 +137,22 @@ export const TonerTracker: React.FC = () => {
 
                 {/* Explicit Requirement Notice for Finished Red status */}
                 {isFinished && (
-                  <div className="mb-3 px-2 py-1.5 rounded-lg bg-rose-100 dark:bg-rose-900/50 border border-rose-200 dark:border-rose-800/80 text-[11px] font-semibold text-rose-800 dark:text-rose-200 flex items-center gap-1.5">
-                    <AlertOctagon className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 shrink-0" />
+                  <div className="mb-3 px-2.5 py-1.5 rounded-xl bg-rose-100/60 border border-rose-200 text-[11px] font-medium text-rose-800 flex items-center gap-1.5">
+                    <AlertOctagon className="w-3.5 h-3.5 text-rose-600 shrink-0" />
                     <span>Rød betyder den er færdig nu</span>
                   </div>
                 )}
 
                 {/* Active explanation */}
                 {isActive && (
-                  <div className="mb-3 px-2 py-1 rounded-lg bg-blue-100/70 dark:bg-blue-950/60 border border-blue-200/70 dark:border-blue-800 text-[11px] text-blue-800 dark:text-blue-300">
-                    Nye print-ordrer tilføjes automatisk her.
+                  <div className="mb-3 px-2.5 py-1.5 rounded-xl bg-emerald-100/60 border border-emerald-200/80 text-[11px] text-emerald-900">
+                    Nye ordrer tilføjes automatisk her.
                   </div>
                 )}
 
                 {/* Large Counter */}
                 <div className="my-2">
-                  <div className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold">
+                  <div className="text-[11px] uppercase tracking-wider text-stone-500 font-semibold">
                     Antal print på toner
                   </div>
                   
@@ -163,47 +163,47 @@ export const TonerTracker: React.FC = () => {
                         min="0"
                         value={manualCount}
                         onChange={(e) => setManualCount(Math.max(0, parseInt(e.target.value) || 0))}
-                        className="w-20 px-2 py-1 rounded border border-blue-500 bg-white dark:bg-slate-800 text-lg font-bold"
+                        className="w-20 px-2 py-1 rounded-lg border border-stone-400 bg-white text-base font-bold text-stone-900"
                       />
                       <button
                         onClick={() => saveEditCount(toner.id)}
-                        className="px-2 py-1 text-xs font-bold bg-blue-600 text-white rounded hover:bg-blue-700"
+                        className="px-2.5 py-1 text-xs font-semibold bg-stone-900 text-stone-100 rounded-lg hover:bg-stone-800"
                       >
                         Gem
                       </button>
                       <button
                         onClick={() => setEditingTonerId(null)}
-                        className="px-2 py-1 text-xs text-slate-500 hover:text-slate-800"
+                        className="px-2 py-1 text-xs text-stone-500 hover:text-stone-800"
                       >
-                        Annuller
+                        Luk
                       </button>
                     </div>
                   ) : (
-                    <div className="flex items-baseline justify-between mt-0.5">
-                      <div className="text-3xl font-black tracking-tight text-slate-900 dark:text-white tabular-nums">
+                    <div className="flex items-baseline justify-between mt-1">
+                      <div className="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900 tabular-nums">
                         {toner.printedCount}{' '}
-                        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                        <span className="text-xs font-normal text-stone-500">
                           / {toner.capacity || 108} stk
                         </span>
                       </div>
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => adjustTonerCount(toner.id, -1)}
-                          className="w-6 h-6 rounded bg-slate-200/70 dark:bg-slate-700 hover:bg-slate-300 flex items-center justify-center text-slate-700 dark:text-slate-200"
+                          className="w-6 h-6 rounded-lg bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-stone-600 transition-colors cursor-pointer"
                           title="Træk 1 fra"
                         >
                           <Minus className="w-3 h-3" />
                         </button>
                         <button
                           onClick={() => adjustTonerCount(toner.id, 1)}
-                          className="w-6 h-6 rounded bg-slate-200/70 dark:bg-slate-700 hover:bg-slate-300 flex items-center justify-center text-slate-700 dark:text-slate-200"
+                          className="w-6 h-6 rounded-lg bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-stone-600 transition-colors cursor-pointer"
                           title="Læg 1 til"
                         >
                           <Plus className="w-3 h-3" />
                         </button>
                         <button
                           onClick={() => startEditCount(toner)}
-                          className="w-6 h-6 rounded bg-slate-200/70 dark:bg-slate-700 hover:bg-slate-300 flex items-center justify-center text-slate-500 dark:text-slate-400 ml-0.5"
+                          className="w-6 h-6 rounded-lg bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-stone-500 transition-colors ml-0.5 cursor-pointer"
                           title="Rediger tal manuelt"
                         >
                           <Edit2 className="w-3 h-3" />
@@ -214,14 +214,14 @@ export const TonerTracker: React.FC = () => {
                 </div>
 
                 {/* Progress bar */}
-                <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mt-2">
+                <div className="w-full h-2 bg-stone-200/80 rounded-full overflow-hidden mt-3">
                   <div
                     className={`h-full rounded-full transition-all duration-500 ${
                       isFinished
                         ? 'bg-rose-500'
                         : isActive
-                        ? 'bg-gradient-to-r from-blue-500 to-indigo-600'
-                        : 'bg-slate-400'
+                        ? 'bg-emerald-600'
+                        : 'bg-stone-400'
                     }`}
                     style={{ width: `${pct}%` }}
                   />
@@ -229,20 +229,20 @@ export const TonerTracker: React.FC = () => {
 
                 {/* Notes if available */}
                 {toner.notes && (
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2 line-clamp-2 italic">
+                  <p className="text-[11px] text-stone-500 mt-2 line-clamp-2 italic">
                     {toner.notes}
                   </p>
                 )}
               </div>
 
               {/* Action Controls for this Toner */}
-              <div className="mt-4 pt-3 border-t border-slate-200/60 dark:border-slate-800 space-y-2">
+              <div className="mt-4 pt-3 border-t border-stone-200/60 space-y-2.5">
                 {/* Fast Button for Active Toner */}
                 {isActive && (
                   <button
                     onClick={() => handleFinishAndNext(toner)}
                     type="button"
-                    className="w-full flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-bold rounded-xl text-white bg-rose-600 hover:bg-rose-700 shadow-sm shadow-rose-600/30 transition-all hover:scale-[1.01] active:scale-[0.99]"
+                    className="w-full flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-medium rounded-xl text-white bg-rose-700 hover:bg-rose-800 transition-all shadow-2xs cursor-pointer active:scale-[0.98]"
                   >
                     <AlertOctagon className="w-3.5 h-3.5" />
                     <span>Marker som færdig & aktiver næste</span>
@@ -251,34 +251,34 @@ export const TonerTracker: React.FC = () => {
 
                 {/* Status Switcher */}
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-500 dark:text-slate-400 text-[11px]">Skift status:</span>
+                  <span className="text-stone-500 text-[11px]">Skift status:</span>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => handleStatusChange(toner.id, 'active')}
-                      className={`px-2 py-0.5 rounded text-[11px] font-semibold transition-colors ${
+                      className={`px-2 py-0.5 rounded-lg text-[11px] font-medium transition-colors cursor-pointer ${
                         isActive
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                          ? 'bg-emerald-800 text-white'
+                          : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
                       }`}
                     >
                       Aktiv
                     </button>
                     <button
                       onClick={() => handleStatusChange(toner.id, 'finished')}
-                      className={`px-2 py-0.5 rounded text-[11px] font-semibold transition-colors ${
+                      className={`px-2 py-0.5 rounded-lg text-[11px] font-medium transition-colors cursor-pointer ${
                         isFinished
-                          ? 'bg-rose-600 text-white'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-rose-100 dark:hover:bg-rose-950'
+                          ? 'bg-rose-700 text-white'
+                          : 'bg-stone-100 text-stone-600 hover:bg-rose-100 hover:text-rose-800'
                       }`}
                     >
                       Færdig (Rød)
                     </button>
                     <button
                       onClick={() => handleStatusChange(toner.id, 'ready')}
-                      className={`px-2 py-0.5 rounded text-[11px] font-semibold transition-colors ${
+                      className={`px-2 py-0.5 rounded-lg text-[11px] font-medium transition-colors cursor-pointer ${
                         isReady
-                          ? 'bg-slate-600 text-white'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                          ? 'bg-stone-700 text-white'
+                          : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
                       }`}
                     >
                       Klar

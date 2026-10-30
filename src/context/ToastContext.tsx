@@ -40,23 +40,23 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`pointer-events-auto flex items-center justify-between p-3.5 rounded-xl shadow-lg border backdrop-blur-md transition-all animate-in fade-in slide-in-from-bottom-3 duration-200 ${
+            className={`pointer-events-auto flex items-center justify-between p-3.5 rounded-2xl shadow-lg border backdrop-blur-md transition-all animate-in fade-in slide-in-from-bottom-2 duration-150 ${
               toast.type === 'success'
-                ? 'bg-emerald-950/90 border-emerald-500/40 text-emerald-200'
+                ? 'bg-stone-900 text-stone-100 border-stone-800'
                 : toast.type === 'error'
-                ? 'bg-rose-950/90 border-rose-500/40 text-rose-200'
-                : 'bg-slate-900/90 border-slate-700 text-slate-200'
+                ? 'bg-rose-900 text-rose-100 border-rose-800'
+                : 'bg-stone-800 text-stone-100 border-stone-700'
             }`}
           >
-            <div className="flex items-center gap-2.5 text-sm font-medium">
+            <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium">
               {toast.type === 'success' && <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />}
-              {toast.type === 'error' && <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />}
-              {toast.type === 'info' && <Info className="w-4 h-4 text-sky-400 shrink-0" />}
+              {toast.type === 'error' && <AlertCircle className="w-4 h-4 text-rose-300 shrink-0" />}
+              {toast.type === 'info' && <Info className="w-4 h-4 text-stone-400 shrink-0" />}
               <span>{toast.message}</span>
             </div>
             <button
               onClick={() => removeToast(toast.id)}
-              className="p-1 rounded-md hover:bg-white/10 text-slate-400 hover:text-white transition-colors ml-2"
+              className="p-1 rounded-md hover:bg-white/10 text-stone-400 hover:text-white transition-colors ml-2 cursor-pointer"
               aria-label="Luk besked"
             >
               <X className="w-3.5 h-3.5" />

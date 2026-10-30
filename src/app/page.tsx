@@ -32,17 +32,17 @@ export default function DashboardPage() {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+      <div className="min-h-screen flex items-center justify-center bg-[#FAF8F5]">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-xs font-semibold text-slate-500">Indlæser dashboard og data...</p>
+          <div className="w-7 h-7 border-2 border-stone-300 border-t-stone-800 rounded-full animate-spin"></div>
+          <p className="text-xs font-medium text-stone-500 tracking-wide">Indlæser dashboard og data...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950">
+    <div className="min-h-screen flex flex-col bg-[#FAF8F5] text-stone-800">
       
       {/* Top Sticky Navigation */}
       <Header
@@ -56,7 +56,7 @@ export default function DashboardPage() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-7 space-y-7">
         
         {/* Section 1: KPI Cards & Printer Payoff Tracker */}
         <KpiCards
@@ -107,7 +107,7 @@ export default function DashboardPage() {
       />
 
       {/* Floating Action Button for Mobile quick access */}
-      <div className="sm:hidden fixed bottom-5 right-5 z-40">
+      <div className="sm:hidden fixed bottom-6 right-5 z-40">
         <button
           onClick={() => {
             setPrefillQty(undefined);
@@ -115,35 +115,35 @@ export default function DashboardPage() {
             setIsQuickAddOpen(true);
           }}
           type="button"
-          className="w-14 h-14 rounded-full bg-blue-600 text-white shadow-xl flex items-center justify-center hover:bg-blue-700 active:scale-95 transition-all"
+          className="w-13 h-13 rounded-full bg-stone-900 text-stone-100 shadow-lg shadow-stone-900/20 flex items-center justify-center hover:bg-stone-800 active:scale-95 transition-all"
           aria-label="Opret ny ordre"
         >
-          <Plus className="w-6 h-6" />
+          <Plus className="w-5 h-5" />
         </button>
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 py-6 mt-12 transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
+      <footer className="border-t border-stone-200/70 bg-white/60 py-6 mt-12 backdrop-blur-xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-500">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-slate-700 dark:text-slate-300">
-              Billede Print Dashboard
+            <span className="font-semibold text-stone-700">
+              Billede Print Studio
             </span>
-            <span>•</span>
-            <span>Klar til Vercel & GitHub deployment</span>
+            <span className="text-stone-300">•</span>
+            <span>Overskuelig & rolig administration</span>
           </div>
 
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsSettingsOpen(true)}
-              className="hover:text-blue-600 transition-colors"
+              className="hover:text-stone-900 transition-colors cursor-pointer"
             >
               Juster formler & priser
             </button>
-            <span>•</span>
+            <span className="text-stone-300">•</span>
             <button
               onClick={() => setIsBackupOpen(true)}
-              className="hover:text-blue-600 transition-colors"
+              className="hover:text-stone-900 transition-colors cursor-pointer"
             >
               Eksportér regneark (CSV)
             </button>

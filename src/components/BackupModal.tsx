@@ -72,20 +72,20 @@ export const BackupModal: React.FC<BackupModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 border border-slate-200 dark:border-slate-800 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/40 backdrop-blur-xs animate-in fade-in duration-150">
+      <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 border border-stone-200 shadow-xl relative max-h-[92vh] overflow-y-auto">
         
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-center justify-between pb-4 border-b border-stone-100">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-stone-100 text-stone-700 flex items-center justify-center">
               <Database className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+              <h3 className="text-base sm:text-lg font-bold text-stone-900">
                 Data, Eksport & Backup
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-stone-500">
                 Data gemmes automatisk i din browser (LocalStorage)
               </p>
             </div>
@@ -93,7 +93,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({
           <button
             onClick={onClose}
             type="button"
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -103,7 +103,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({
           
           {/* Quick Export Cards */}
           <div className="space-y-2.5">
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-stone-600">
               Download Backup & Regneark
             </label>
 
@@ -115,16 +115,16 @@ export const BackupModal: React.FC<BackupModalProps> = ({
                   exportJson();
                   showToast('JSON backup fil downloadet!');
                 }}
-                className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-blue-50/50 dark:hover:bg-slate-750 transition-all text-left flex items-start gap-3 group"
+                className="p-3.5 rounded-xl border border-stone-200 bg-stone-50/80 hover:bg-stone-100 transition-all text-left flex items-start gap-3 group cursor-pointer"
               >
-                <div className="w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <div className="w-9 h-9 rounded-lg bg-stone-200 text-stone-700 flex items-center justify-center shrink-0">
                   <Download className="w-4 h-4" />
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-slate-900 dark:text-white">
+                  <div className="text-xs font-bold text-stone-900">
                     Eksporter JSON
                   </div>
-                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
+                  <div className="text-[11px] text-stone-500 mt-0.5 leading-snug">
                     Gemmer alle ordrer, tonere og indstillinger i én backupfil.
                   </div>
                 </div>
@@ -137,16 +137,16 @@ export const BackupModal: React.FC<BackupModalProps> = ({
                   exportCsv();
                   showToast('Excel CSV fil downloadet!');
                 }}
-                className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-emerald-50/50 dark:hover:bg-slate-750 transition-all text-left flex items-start gap-3 group"
+                className="p-3.5 rounded-xl border border-stone-200 bg-stone-50/80 hover:bg-stone-100 transition-all text-left flex items-start gap-3 group cursor-pointer"
               >
-                <div className="w-9 h-9 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <div className="w-9 h-9 rounded-lg bg-stone-200 text-stone-700 flex items-center justify-center shrink-0">
                   <FileSpreadsheet className="w-4 h-4" />
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-slate-900 dark:text-white">
+                  <div className="text-xs font-bold text-stone-900">
                     Eksporter til Excel (CSV)
                   </div>
-                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
+                  <div className="text-[11px] text-stone-500 mt-0.5 leading-snug">
                     Klar til regneark med dato, kunde, pris, betalt og toner.
                   </div>
                 </div>
@@ -155,8 +155,8 @@ export const BackupModal: React.FC<BackupModalProps> = ({
           </div>
 
           {/* Import JSON Section */}
-          <div className="space-y-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+          <div className="space-y-2.5 pt-3 border-t border-stone-100">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-stone-600">
               Gendan fra JSON Backup
             </label>
 
@@ -171,27 +171,27 @@ export const BackupModal: React.FC<BackupModalProps> = ({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="flex-1 py-2.5 px-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-800 dark:text-slate-200 text-xs font-bold flex items-center justify-center gap-2 transition-colors"
+                className="flex-1 py-2.5 px-3 rounded-xl border border-stone-300 bg-white hover:bg-stone-50 text-stone-800 text-xs font-medium flex items-center justify-center gap-2 transition-colors cursor-pointer"
               >
-                <Upload className="w-4 h-4 text-slate-500" />
+                <Upload className="w-4 h-4 text-stone-500" />
                 <span>Vælg JSON backupfil fra computer</span>
               </button>
             </div>
 
-            <div className="text-center text-xs text-slate-400 my-1">— eller indsæt rå JSON tekst —</div>
+            <div className="text-center text-xs text-stone-400 my-1">— eller indsæt rå JSON tekst —</div>
 
             <textarea
               rows={3}
               placeholder='Indsæt backup JSON her {"version": "1.0", ...}'
               value={jsonText}
               onChange={(e) => setJsonText(e.target.value)}
-              className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-xs font-mono text-slate-800 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2.5 rounded-xl border border-stone-200 bg-stone-50 text-xs font-mono text-stone-800 focus:outline-hidden focus:border-stone-400"
             />
             {jsonText.trim() && (
               <button
                 type="button"
                 onClick={handleManualImport}
-                className="w-full py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors"
+                className="w-full py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-100 text-xs font-medium transition-colors cursor-pointer"
               >
                 Indlæs JSON tekst
               </button>
@@ -199,28 +199,28 @@ export const BackupModal: React.FC<BackupModalProps> = ({
           </div>
 
           {/* Reset to Default Data */}
-          <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
+          <div className="pt-3 border-t border-stone-100">
             {showConfirmReset ? (
-              <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 space-y-2">
-                <div className="flex items-center gap-2 text-xs font-bold text-rose-700 dark:text-rose-300">
-                  <AlertTriangle className="w-4 h-4" />
+              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 space-y-2">
+                <div className="flex items-center gap-2 text-xs font-semibold text-rose-800">
+                  <AlertTriangle className="w-4 h-4 text-rose-600" />
                   <span>Er du sikker på, at du vil nulstille?</span>
                 </div>
-                <p className="text-[11px] text-rose-600 dark:text-rose-400">
+                <p className="text-[11px] text-rose-700">
                   Dette vil overskrive dine nuværende data og genindlæse de 4 oprindelige testordrer (Folke, Teng, Johannes) og standard tonere.
                 </p>
                 <div className="flex items-center gap-2 pt-1">
                   <button
                     type="button"
                     onClick={handleResetToDefaults}
-                    className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-colors"
+                    className="px-3 py-1.5 rounded-lg bg-rose-700 hover:bg-rose-800 text-white text-xs font-medium transition-colors cursor-pointer"
                   >
                     Ja, genindlæs startdata
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowConfirmReset(false)}
-                    className="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-medium hover:bg-slate-100"
+                    className="px-3 py-1.5 rounded-lg bg-white text-stone-700 text-xs font-medium hover:bg-stone-50 border border-stone-200 cursor-pointer"
                   >
                     Annuller
                   </button>
@@ -229,17 +229,17 @@ export const BackupModal: React.FC<BackupModalProps> = ({
             ) : (
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  <div className="text-xs font-semibold text-stone-800">
                     Fabriksindstillinger
                   </div>
-                  <div className="text-[11px] text-slate-500">
+                  <div className="text-[11px] text-stone-500">
                     Genindlæs regnearkets oprindelige startdata
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowConfirmReset(true)}
-                  className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors flex items-center gap-1.5"
+                  className="px-3 py-1.5 rounded-lg border border-stone-200 text-xs font-medium text-rose-700 hover:bg-rose-50 transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                   <span>Genindlæs startdata</span>

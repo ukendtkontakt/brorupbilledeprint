@@ -1,17 +1,20 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Plus_Jakarta_Sans, Newsreader } from 'next/font/google';
 import './globals.css';
 import { PrintStoreProvider } from '@/context/PrintStoreContext';
 import { ToastProvider } from '@/context/ToastContext';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const sans = Plus_Jakarta_Sans({
+  variable: '--font-sans',
   subsets: ['latin'],
+  display: 'swap',
 });
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const serif = Newsreader({
+  variable: '--font-serif',
   subsets: ['latin'],
+  display: 'swap',
+  style: ['normal', 'italic'],
 });
 
 export const metadata: Metadata = {
@@ -28,8 +31,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="da" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-blue-500 selection:text-white">
+    <html lang="da" className={`${sans.variable} ${serif.variable} h-full antialiased`}>
+      <body className="min-h-full flex flex-col bg-[#FAF8F5] text-stone-900 selection:bg-stone-800 selection:text-stone-100 font-sans">
         <PrintStoreProvider>
           <ToastProvider>
             {children}
