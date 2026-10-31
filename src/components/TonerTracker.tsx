@@ -43,14 +43,6 @@ export const TonerTracker: React.FC = () => {
 
   const totalPrintsAcrossToners = toners.reduce((acc, t) => acc + t.printedCount, 0);
 
-  const averageYield =
-    finishedToners.length > 0
-      ? Math.round(
-          finishedToners.reduce((acc, t) => acc + t.printedCount, 0) /
-            finishedToners.length
-        )
-      : null;
-
   const startEditCount = (toner: Toner) => {
     setEditingTonerId(toner.id);
     setManualCount(toner.printedCount);
@@ -375,12 +367,6 @@ export const TonerTracker: React.FC = () => {
               Opbrugte patroner ({finishedToners.length})
             </h5>
           </div>
-
-          {averageYield !== null && (
-            <div className="text-xs px-2.5 py-1 rounded-xl bg-indigo-50 border border-indigo-100/90 text-indigo-900 font-bold">
-              Gennemsnit: <span className="text-indigo-600 font-extrabold">{averageYield} prints</span> / patron
-            </div>
-          )}
         </div>
 
         {finishedToners.length > 0 ? (
