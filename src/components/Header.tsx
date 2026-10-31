@@ -1,57 +1,59 @@
 'use client';
 
 import React from 'react';
-import { Printer, Plus, Settings, Database, CloudOff } from 'lucide-react';
+import { Printer, Plus, Settings, Database, CloudOff, LayoutGrid } from 'lucide-react';
 import { usePrintStore } from '@/context/PrintStoreContext';
 
 interface HeaderProps {
   onOpenQuickAdd: () => void;
   onOpenSettings: () => void;
   onOpenBackup: () => void;
+  onOpenCustomizer: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   onOpenQuickAdd,
   onOpenSettings,
   onOpenBackup,
+  onOpenCustomizer,
 }) => {
   const { isCloudConnected } = usePrintStore();
 
   return (
-    <header className="border-b border-stone-200/80 bg-[#FAF8F5]/90 backdrop-blur-md sticky top-0 z-30 transition-colors">
+    <header className="border-b border-slate-200/90 bg-white/95 backdrop-blur-md sticky top-0 z-30 transition-colors shadow-2xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-4">
         
         {/* Brand & Title */}
         <div className="flex items-center gap-3.5 w-full sm:w-auto justify-between sm:justify-start">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-stone-900 flex items-center justify-center text-stone-100 shadow-xs">
-              <Printer className="w-4.5 h-4.5" />
+            <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-xs">
+              <Printer className="w-5 h-5 text-indigo-400" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-bold text-stone-900 tracking-tight">
-                  Billede Print
+                <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+                  Billede Print Studio
                 </h1>
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-stone-100 text-stone-600 border border-stone-200/80">
-                  Værksted
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/60">
+                  Dashboard
                 </span>
               </div>
-              <p className="text-xs text-stone-500">
-                Regnskab, toner-oversigt & afbetaling
+              <p className="text-xs text-slate-500 font-medium">
+                Regnskab, toner-tracker & fleksibelt layout
               </p>
             </div>
           </div>
 
           {/* Mobile Cloud / Local badge */}
-          <div className="flex sm:hidden items-center gap-1 text-[11px] px-2.5 py-1 rounded-full border border-stone-200 bg-white">
+          <div className="flex sm:hidden items-center gap-1 text-[11px] px-2.5 py-1 rounded-full border border-slate-200 bg-white">
             {isCloudConnected ? (
-              <span className="flex items-center gap-1.5 text-emerald-800 font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+              <span className="flex items-center gap-1.5 text-emerald-700 font-bold">
+                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                 <span>Sky-sync</span>
               </span>
             ) : (
-              <span className="flex items-center gap-1.5 text-stone-500 font-medium">
-                <CloudOff className="w-3 h-3 text-stone-400" />
+              <span className="flex items-center gap-1.5 text-slate-500 font-medium">
+                <CloudOff className="w-3.5 h-3.5 text-slate-400" />
                 <span>Lokal</span>
               </span>
             )}
@@ -65,8 +67,8 @@ export const Header: React.FC<HeaderProps> = ({
           <div
             className={`hidden sm:flex items-center gap-2 text-xs px-3 py-1.5 rounded-xl border mr-1 ${
               isCloudConnected
-                ? 'text-emerald-800 bg-emerald-50/70 border-emerald-200/70'
-                : 'text-stone-600 bg-stone-100/80 border-stone-200'
+                ? 'text-emerald-800 bg-emerald-50 border-emerald-200/80 font-semibold'
+                : 'text-slate-600 bg-slate-100/90 border-slate-200 font-medium'
             }`}
             title={
               isCloudConnected
@@ -77,24 +79,36 @@ export const Header: React.FC<HeaderProps> = ({
             {isCloudConnected ? (
               <>
                 <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
-                <span className="font-medium">Sky-synkroniseret (PC & Mobil)</span>
+                <span>Sky-synkroniseret (PC & Mobil)</span>
               </>
             ) : (
               <>
-                <CloudOff className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+                <CloudOff className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                 <span>Lokal lagring (LocalStorage)</span>
               </>
             )}
           </div>
 
+          {/* Customize Layout button */}
+          <button
+            onClick={onOpenCustomizer}
+            type="button"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold rounded-xl text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100/90 transition-colors border border-indigo-200/70 shadow-2xs cursor-pointer active:scale-95"
+            title="Flyt rundt på firkanterne, skjul eller vis moduler"
+          >
+            <LayoutGrid className="w-3.5 h-3.5 text-indigo-600" />
+            <span className="hidden md:inline">Tilpas layout</span>
+            <span className="md:hidden">Flyt</span>
+          </button>
+
           {/* Backup / Export */}
           <button
             onClick={onOpenBackup}
             type="button"
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-medium rounded-xl text-stone-700 bg-white hover:bg-stone-50 hover:border-stone-300 transition-colors border border-stone-200/80 shadow-2xs cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold rounded-xl text-slate-700 bg-white hover:bg-slate-50 transition-colors border border-slate-200 shadow-2xs cursor-pointer"
             title="Import/Eksport af data, CSV og backup"
           >
-            <Database className="w-3.5 h-3.5 text-stone-500" />
+            <Database className="w-3.5 h-3.5 text-slate-500" />
             <span className="hidden md:inline">Data & Backup</span>
             <span className="md:hidden">Data</span>
           </button>
@@ -103,10 +117,10 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onOpenSettings}
             type="button"
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-medium rounded-xl text-stone-700 bg-white hover:bg-stone-50 hover:border-stone-300 transition-colors border border-stone-200/80 shadow-2xs cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold rounded-xl text-slate-700 bg-white hover:bg-slate-50 transition-colors border border-slate-200 shadow-2xs cursor-pointer"
             title="Omkostnings-indstillinger & formler"
           >
-            <Settings className="w-3.5 h-3.5 text-stone-500" />
+            <Settings className="w-3.5 h-3.5 text-slate-500" />
             <span className="hidden md:inline">Indstillinger</span>
             <span className="md:hidden">Priser</span>
           </button>
@@ -115,7 +129,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onOpenQuickAdd}
             type="button"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-medium rounded-xl text-stone-100 bg-stone-900 hover:bg-stone-800 transition-all active:scale-[0.98] shadow-xs cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-bold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 transition-all active:scale-[0.98] shadow-xs cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Opret ordre</span>

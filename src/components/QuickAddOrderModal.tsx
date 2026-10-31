@@ -24,32 +24,40 @@ interface QuickAddOrderModalProps {
   onClose: () => void;
   initialQuantity?: number;
   initialIsContactGroup?: boolean;
+  initialCustomerName?: string;
+  initialUnitPrice?: number;
 }
 
 interface FormInnerProps {
   onClose: () => void;
   initialQuantity?: number;
   initialIsContactGroup?: boolean;
+  initialCustomerName?: string;
+  initialUnitPrice?: number;
 }
 
 function QuickAddFormInner({
   onClose,
   initialQuantity,
   initialIsContactGroup,
+  initialCustomerName,
+  initialUnitPrice,
 }: FormInnerProps) {
   const { addOrder, toners, activeToner, orders, settings } = usePrintStore();
   const { showToast } = useToast();
 
-  const [customerName, setCustomerName] = useState('');
+  const [customerName, setCustomerName] = useState(initialCustomerName || '');
   const [quantity, setQuantity] = useState<number>(initialQuantity || 1);
   const [isContactGroup, setIsContactGroup] = useState<boolean>(initialIsContactGroup || false);
 
   // Decimal price string supporting comma e.g. "4,7" or "4.7"
-  const defaultInitialPrice = getStandardUnitPrice(initialQuantity || 1, initialIsContactGroup || false, settings);
+  const defaultInitialPrice = initialUnitPrice !== undefined
+    ? initialUnitPrice
+    : getStandardUnitPrice(initialQuantity || 1, initialIsContactGroup || false, settings);
   const [priceInput, setPriceInput] = useState<string>(() =>
     defaultInitialPrice.toString().replace('.', ',')
   );
-  const [isManualPrice, setIsManualPrice] = useState<boolean>(false);
+  const [isManualPrice, setIsManualPrice] = useState<boolean>(initialUnitPrice !== undefined);
 
   const [isPaid, setIsPaid] = useState<boolean>(true);
   const [date, setDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
@@ -604,15 +612,19 @@ export const QuickAddOrderModal: React.FC<QuickAddOrderModalProps> = ({
   onClose,
   initialQuantity,
   initialIsContactGroup,
+  initialCustomerName,
+  initialUnitPrice,
 }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/40 backdrop-blur-xs animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
       <QuickAddFormInner
         onClose={onClose}
         initialQuantity={initialQuantity}
         initialIsContactGroup={initialIsContactGroup}
+        initialCustomerName={initialCustomerName}
+        initialUnitPrice={initialUnitPrice}
       />
     </div>
   );

@@ -32,7 +32,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="da" className={`${sans.variable} ${serif.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-[#FAF8F5] text-stone-900 selection:bg-stone-800 selection:text-stone-100 font-sans">
+      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 selection:bg-indigo-600 selection:text-white font-sans">
         <PrintStoreProvider>
           <ToastProvider>
             {children}

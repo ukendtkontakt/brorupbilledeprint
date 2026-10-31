@@ -1,8 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --background: #FAF8F5;
-  --foreground: #23201D;
+  --background: #F8FAFC;
+  --foreground: #0F172A;
+  --card: #FFFFFF;
+  --card-foreground: #0F172A;
+  --border: #E2E8F0;
+  --primary: #4F46E5;
+  --primary-foreground: #FFFFFF;
+  --accent: #059669;
 }
 
 @theme inline {
@@ -13,14 +19,14 @@
 }
 
 body {
-  background-color: #FAF8F5;
-  color: #23201D;
+  background-color: #F8FAFC;
+  color: #0F172A;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Subtle, pleasing scrollbar */
+/* Crisp Precision Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -29,9 +35,28 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #D6D1C7;
+  background: #CBD5E1;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #B3ADA2;
+  background: #94A3B8;
+}
+
+/* Drag-and-drop feedback */
+.widget-dragging {
+  opacity: 0.55;
+  transform: scale(0.99);
+}
+
+.widget-drag-over {
+  position: relative;
+}
+.widget-drag-over::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 2px dashed #4F46E5;
+  border-radius: 1.25rem;
+  pointer-events: none;
+  z-index: 20;
 }

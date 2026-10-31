@@ -56,3 +56,20 @@ export interface KpiData {
   printerPayoffPercentage: number; // 0 - 100%
   paidRevenue: number; // Allerede modtaget
 }
+
+export type DashboardWidgetId =
+  | 'kpis'
+  | 'printer_payoff'
+  | 'activity_trend'
+  | 'profit_simulator'
+  | 'pricing_calculator'
+  | 'toner_tracker'
+  | 'customer_stats'
+  | 'orders_table';
+
+export interface DashboardWidgetConfig {
+  id: DashboardWidgetId;
+  title: string;
+  description: string;
+  enabled: boolean;
+}
