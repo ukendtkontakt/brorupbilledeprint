@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { usePrintStore } from '@/context/PrintStoreContext';
 import { useToast } from '@/context/ToastContext';
 import { getStandardUnitPrice, formatCurrency } from '@/utils/calculations';
-import { OrderTonerBreakdown } from '@/types';
 import {
   X,
   Users,
@@ -14,9 +13,6 @@ import {
   Layers,
   RotateCcw,
   Split,
-  Plus,
-  Trash2,
-  Check,
 } from 'lucide-react';
 
 interface QuickAddOrderModalProps {
@@ -43,8 +39,9 @@ function QuickAddFormInner({
   initialCustomerName,
   initialUnitPrice,
 }: FormInnerProps) {
-  const { addOrder, toners, activeToner, orders, settings } = usePrintStore();
+  const { addOrder, toners, activeToner, orders, settings, getNextTonerName } = usePrintStore();
   const { showToast } = useToast();
+  const nextSequentialName = getNextTonerName();
 
   const [customerName, setCustomerName] = useState(initialCustomerName || '');
   const [quantity, setQuantity] = useState<number>(initialQuantity || 1);
@@ -63,13 +60,19 @@ function QuickAddFormInner({
   const [date, setDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState<string>('');
 
-  // Single vs Multi-toner split
-  const defaultTonerId = activeToner?.id || toners[0]?.id || '';
-  const [isMultiToner, setIsMultiToner] = useState<boolean>(false);
-  const [singleTonerId, setSingleTonerId] = useState<string>(defaultTonerId);
-  const [tonerAllocations, setTonerAllocations] = useState<OrderTonerBreakdown[]>([
-    { tonerId: defaultTonerId, count: initialQuantity || 1 },
-  ]);
+  // Primary toner selection (defaults to current active toner)
+  const defaultToner = activeToner || toners.find((t) => t.status === 'active') || toners[0];
+  const [selectedTonerId, setSelectedTonerId] = useState<string>(defaultToner?.id || '');
+
+  // Mid-order split state
+  const [isSplitToner, setIsSplitToner] = useState<boolean>(false);
+  const [printsOnFirstToner, setPrintsOnFirstToner] = useState<number>(() =>
+    Math.max(1, Math.min(14, (initialQuantity || 1) - 1))
+  );
+
+  const readyToners = toners.filter((t) => t.status === 'ready' && t.id !== selectedTonerId);
+  const [secondTonerChoice, setSecondTonerChoice] = useState<string>(() => readyToners[0]?.id || 'NEW_TONER');
+  const [autoRetireFirstToner, setAutoRetireFirstToner] = useState<boolean>(true);
 
   // Extract unique customer names for quick autocomplete
   const existingCustomers = Array.from(new Set(orders.map((o) => o.customerName))).filter(Boolean);
@@ -95,9 +98,8 @@ function QuickAddFormInner({
       setPriceInput(autoPrice.toString().replace('.', ','));
     }
 
-    // If multi toner is on and only 1 allocation exists, update it to match
-    if (tonerAllocations.length === 1) {
-      setTonerAllocations([{ tonerId: tonerAllocations[0].tonerId, count: validQty }]);
+    if (printsOnFirstToner >= validQty) {
+      setPrintsOnFirstToner(Math.max(1, validQty - 1));
     }
   };
 
@@ -120,72 +122,6 @@ function QuickAddFormInner({
     showToast('Pris nulstillet til standard takst');
   };
 
-  // Multi-toner management
-  const totalAllocated = isMultiToner
-    ? tonerAllocations.reduce((sum, item) => sum + (Number(item.count) || 0), 0)
-    : quantity;
-  const allocationDiff = quantity - totalAllocated;
-
-  const handleToggleMultiToner = (enable: boolean) => {
-    setIsMultiToner(enable);
-    if (enable && tonerAllocations.length <= 1) {
-      // Find next ready toner or fallback
-      const currentId = singleTonerId || defaultTonerId;
-      const otherToner = toners.find((t) => t.id !== currentId) || toners[0];
-
-      // Propose a sensible split (e.g. half/half or 20 + rest)
-      const part1 = Math.max(1, Math.floor(quantity / 2));
-      const part2 = Math.max(1, quantity - part1);
-
-      setTonerAllocations([
-        { tonerId: currentId, count: part1 },
-        { tonerId: otherToner ? otherToner.id : currentId, count: part2 },
-      ]);
-    }
-  };
-
-  const handleUpdateAllocation = (index: number, field: 'tonerId' | 'count', value: string | number) => {
-    setTonerAllocations((prev) =>
-      prev.map((item, idx) => {
-        if (idx !== index) return item;
-        return {
-          ...item,
-          [field]: field === 'count' ? Math.max(0, Number(value) || 0) : value,
-        };
-      })
-    );
-  };
-
-  const handleAddTonerRow = () => {
-    // Pick the first toner not already in allocations, or active
-    const usedIds = new Set(tonerAllocations.map((a) => a.tonerId));
-    const nextUnused = toners.find((t) => !usedIds.has(t.id)) || toners[0];
-    const fillRemainder = Math.max(0, allocationDiff);
-
-    setTonerAllocations((prev) => [
-      ...prev,
-      { tonerId: nextUnused.id, count: fillRemainder },
-    ]);
-  };
-
-  const handleRemoveTonerRow = (index: number) => {
-    if (tonerAllocations.length <= 1) return;
-    setTonerAllocations((prev) => prev.filter((_, idx) => idx !== index));
-  };
-
-  const handleFillRemainderOnRow = (index: number) => {
-    if (allocationDiff === 0) return;
-    setTonerAllocations((prev) =>
-      prev.map((item, idx) => {
-        if (idx !== index) return item;
-        return {
-          ...item,
-          count: Math.max(0, item.count + allocationDiff),
-        };
-      })
-    );
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!customerName.trim()) {
@@ -197,18 +133,52 @@ function QuickAddFormInner({
       return;
     }
 
-    if (isMultiToner) {
-      if (allocationDiff !== 0) {
-        showToast(
-          allocationDiff > 0
-            ? `Du mangler at fordele ${allocationDiff} prints på tonerne`
-            : `Du har fordelt ${Math.abs(allocationDiff)} prints for meget på tonerne`,
-          'error'
-        );
-        return;
-      }
+    // Mid-order split execution
+    if (isSplitToner && quantity > 1) {
+      const firstCount = Math.max(1, Math.min(printsOnFirstToner, quantity - 1));
+      const secondCount = quantity - firstCount;
+
+      const isBrandNewToner = secondTonerChoice === 'NEW_TONER';
+      const secondTonerName = isBrandNewToner
+        ? nextSequentialName
+        : toners.find((t) => t.id === secondTonerChoice)?.name || 'Ny patron';
+
+      const firstTonerName = toners.find((t) => t.id === selectedTonerId)?.name || 'Gammel patron';
+
+      const createdOrder = addOrder({
+        customerName,
+        quantity,
+        unitPrice: parsedUnitPrice,
+        totalPrice,
+        isPaid,
+        isContactGroup,
+        tonerBreakdown: [
+          { tonerId: selectedTonerId, count: firstCount },
+          { tonerId: isBrandNewToner ? 'new-toner-temp' : secondTonerChoice, count: secondCount },
+        ],
+        tonerNameText: `${firstTonerName} (${firstCount} stk) / ${secondTonerName} (${secondCount} stk)`,
+        autoRetireOldTonerId: autoRetireFirstToner ? selectedTonerId : undefined,
+        autoActivateNewTonerId: autoRetireFirstToner
+          ? isBrandNewToner
+            ? undefined
+            : secondTonerChoice
+          : undefined,
+        autoCreateNewTonerName: isBrandNewToner ? nextSequentialName : undefined,
+        date,
+        notes,
+      });
+
+      showToast(
+        autoRetireFirstToner
+          ? `Ordre oprettet & patron skiftet til ${secondTonerName}!`
+          : `Ordre oprettet for ${createdOrder.customerName}`
+      );
+      onClose();
+      return;
     }
 
+    // Standard single toner allocation
+    const targetToner = toners.find((t) => t.id === selectedTonerId);
     const createdOrder = addOrder({
       customerName,
       quantity,
@@ -216,8 +186,8 @@ function QuickAddFormInner({
       totalPrice,
       isPaid,
       isContactGroup,
-      tonerId: isMultiToner ? undefined : singleTonerId,
-      tonerBreakdown: isMultiToner ? tonerAllocations.filter((a) => a.count > 0) : undefined,
+      tonerId: selectedTonerId,
+      tonerNameText: targetToner ? `${targetToner.name} (${quantity} stk)` : undefined,
       date,
       notes,
     });
@@ -425,134 +395,144 @@ function QuickAddFormInner({
           </div>
         </div>
 
-        {/* Toner Section - Single or Multi-Toner split */}
-        <div className="p-3.5 rounded-2xl bg-stone-50/80 border border-stone-200 space-y-3">
+        {/* Toner Section - Single or Streamlined Mid-Order Split */}
+        <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-semibold uppercase tracking-wider text-stone-700 flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-stone-500" />
+            <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 text-indigo-500" />
               <span>Toner-forbrug</span>
             </label>
 
-            <button
-              type="button"
-              onClick={() => handleToggleMultiToner(!isMultiToner)}
-              className={`text-xs px-2.5 py-1 rounded-lg font-medium flex items-center gap-1.5 transition-all border cursor-pointer ${
-                isMultiToner
-                  ? 'bg-stone-900 text-white border-stone-900 shadow-2xs'
-                  : 'bg-white text-stone-700 border-stone-300 hover:bg-stone-100'
-              }`}
-            >
-              <Split className="w-3 h-3" />
-              <span>{isMultiToner ? 'Opdelt på flere' : 'Opdel på flere tonere?'}</span>
-            </button>
+            {quantity > 1 && (
+              <button
+                type="button"
+                onClick={() => {
+                  const nextSplit = !isSplitToner;
+                  setIsSplitToner(nextSplit);
+                  if (nextSplit) {
+                    setPrintsOnFirstToner(Math.max(1, Math.min(14, quantity - 1)));
+                  }
+                }}
+                className={`text-xs px-2.5 py-1 rounded-xl font-semibold flex items-center gap-1.5 transition-all border cursor-pointer ${
+                  isSplitToner
+                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
+                    : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                }`}
+              >
+                <Split className="w-3 h-3" />
+                <span>{isSplitToner ? 'Patronskift aktivt' : 'Løb toneren tør midt i?'}</span>
+              </button>
+            )}
           </div>
 
-          {!isMultiToner ? (
-            /* Single Toner Selection */
+          {!isSplitToner ? (
+            /* Standard Single Toner */
             <div>
               <select
-                value={singleTonerId}
-                onChange={(e) => setSingleTonerId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-stone-300 bg-white text-stone-900 text-xs font-medium focus:outline-hidden focus:border-stone-500"
+                value={selectedTonerId}
+                onChange={(e) => setSelectedTonerId(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 text-xs font-semibold focus:outline-hidden focus:border-indigo-500"
               >
-                {toners.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name} {t.status === 'active' ? '(Aktiv)' : t.status === 'finished' ? '(Færdig)' : '(Klar)'} — {t.printedCount} print
-                  </option>
-                ))}
+                {toners
+                  .filter((t) => t.status === 'active' || t.status === 'ready')
+                  .map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name} {t.status === 'active' ? '(Aktiv i printer)' : '(Klar på lager)'} — {t.printedCount} print hidtil
+                    </option>
+                  ))}
+                {toners.every((t) => t.status === 'finished') &&
+                  toners.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name} — {t.printedCount} print
+                    </option>
+                  ))}
               </select>
-              <span className="text-[11px] text-stone-400 mt-1 block">
-                Alle {quantity} prints registreres på denne toner. Løber den tør midt i? Tryk på &quot;Opdel på flere tonere&quot; ovenfor.
-              </span>
             </div>
           ) : (
-            /* Multi-Toner Allocation Breakdown */
-            <div className="space-y-2.5">
-              <div className="text-[11px] text-stone-500">
-                Fordel de {quantity} prints på de tonere, der blev brugt:
-              </div>
-
-              {tonerAllocations.map((alloc, idx) => (
-                <div key={idx} className="flex items-center gap-2 bg-white p-2 rounded-xl border border-stone-200">
-                  <span className="text-xs font-semibold text-stone-400 w-5 text-center">
-                    #{idx + 1}
-                  </span>
-                  <select
-                    value={alloc.tonerId}
-                    onChange={(e) => handleUpdateAllocation(idx, 'tonerId', e.target.value)}
-                    className="flex-1 px-2.5 py-1.5 rounded-lg border border-stone-300 bg-stone-50 text-stone-900 text-xs font-medium focus:outline-hidden focus:border-stone-500"
-                  >
-                    {toners.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.name} {t.status === 'active' ? '(Aktiv)' : t.status === 'finished' ? '(Færdig)' : '(Klar)'} ({t.printedCount} print)
-                      </option>
-                    ))}
-                  </select>
-
-                  <div className="flex items-center gap-1 w-24">
-                    <input
-                      type="number"
-                      min="0"
-                      max={quantity}
-                      value={alloc.count}
-                      onChange={(e) => handleUpdateAllocation(idx, 'count', e.target.value)}
-                      className="w-16 px-2 py-1.5 rounded-lg border border-stone-300 bg-stone-50 text-stone-900 text-xs font-bold text-center tabular-nums"
-                    />
-                    <span className="text-xs text-stone-400">stk</span>
+            /* Streamlined Mid-Order Split */
+            <div className="space-y-3 pt-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start">
+                {/* Step 1: First toner (ran empty) */}
+                <div className="p-3 bg-white rounded-xl border border-rose-200 shadow-2xs space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-slate-800">1. Gammel patron</span>
+                    <span className="text-[11px] font-semibold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-100">
+                      Løb tør
+                    </span>
                   </div>
 
-                  {allocationDiff !== 0 && (
-                    <button
-                      type="button"
-                      onClick={() => handleFillRemainderOnRow(idx)}
-                      className="px-2 py-1 rounded-lg bg-stone-100 text-stone-800 text-[10px] font-bold hover:bg-stone-200 whitespace-nowrap cursor-pointer"
-                      title="Læg manglende prints til her"
-                    >
-                      +{allocationDiff}
-                    </button>
-                  )}
+                  <div className="text-xs font-semibold text-slate-700 truncate">
+                    {toners.find((t) => t.id === selectedTonerId)?.name || 'Nuværende toner'}
+                  </div>
 
-                  {tonerAllocations.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveTonerRow(idx)}
-                      className="p-1 rounded-lg text-stone-400 hover:text-rose-700 cursor-pointer"
-                      title="Fjern toner"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  )}
+                  <div>
+                    <label className="text-[11px] text-slate-500 block mb-1">
+                      Prints før den løb tør:
+                    </label>
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="number"
+                        min="1"
+                        max={quantity - 1}
+                        value={printsOnFirstToner}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value) || 1;
+                          setPrintsOnFirstToner(Math.max(1, Math.min(val, quantity - 1)));
+                        }}
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-sm font-bold text-slate-900 tabular-nums focus:outline-hidden focus:border-indigo-500"
+                      />
+                      <span className="text-xs font-semibold text-slate-500">stk</span>
+                    </div>
+                  </div>
                 </div>
-              ))}
 
-              {/* Status and Action row */}
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-stone-200">
-                <button
-                  type="button"
-                  onClick={handleAddTonerRow}
-                  className="inline-flex items-center gap-1 text-xs font-medium text-stone-700 hover:text-stone-900 underline cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Tilføj toner mere</span>
-                </button>
+                {/* Step 2: Second toner (gets remainder) */}
+                <div className="p-3 bg-white rounded-xl border border-emerald-300 shadow-2xs space-y-2 ring-1 ring-emerald-300/40">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-slate-800">2. Ny patron</span>
+                    <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                      Resten ({quantity - printsOnFirstToner} stk)
+                    </span>
+                  </div>
 
-                <div className="text-xs">
-                  {allocationDiff === 0 ? (
-                    <span className="inline-flex items-center gap-1 text-emerald-800 font-medium bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                      <Check className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>Alle {quantity} prints fordelt</span>
-                    </span>
-                  ) : allocationDiff > 0 ? (
-                    <span className="inline-flex items-center gap-1 text-amber-800 font-medium bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-                      <span>Mangler at fordele {allocationDiff} stk</span>
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-rose-800 font-medium bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200">
-                      <span>{Math.abs(allocationDiff)} stk for meget!</span>
-                    </span>
-                  )}
+                  <div>
+                    <label className="text-[11px] text-slate-500 block mb-1">
+                      Vælg ny patron:
+                    </label>
+                    <select
+                      value={secondTonerChoice}
+                      onChange={(e) => setSecondTonerChoice(e.target.value)}
+                      className="w-full px-2 py-1.5 rounded-lg border border-slate-300 bg-slate-50 text-slate-900 text-xs font-semibold focus:outline-hidden focus:border-indigo-500"
+                    >
+                      {readyToners.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.name} (Fra lager)
+                        </option>
+                      ))}
+                      <option value="NEW_TONER">
+                        ✨ {nextSequentialName} (Ny patron)
+                      </option>
+                    </select>
+                  </div>
+
+                  <div className="text-[11px] text-emerald-800 font-medium">
+                    Får automatisk de resterende <b>{quantity - printsOnFirstToner} prints</b>.
+                  </div>
                 </div>
               </div>
+
+              {/* Auto-retire & activate checkbox */}
+              <label className="flex items-center gap-2 p-2 bg-indigo-50/70 rounded-xl border border-indigo-100 cursor-pointer text-xs font-medium text-indigo-900">
+                <input
+                  type="checkbox"
+                  checked={autoRetireFirstToner}
+                  onChange={(e) => setAutoRetireFirstToner(e.target.checked)}
+                  className="rounded text-indigo-600 focus:ring-indigo-500"
+                />
+                <span>
+                  Marker automatisk den gamle patron som <b>Færdig</b> og gør den nye patron <b>Aktiv</b>
+                </span>
+              </label>
             </div>
           )}
         </div>
