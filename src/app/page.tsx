@@ -18,7 +18,7 @@ import { QuickAddOrderModal } from '@/components/QuickAddOrderModal';
 import { SettingsModal } from '@/components/SettingsModal';
 import { BackupModal } from '@/components/BackupModal';
 import { DashboardWidgetConfig } from '@/types';
-import { Plus, LayoutGrid, RotateCcw } from 'lucide-react';
+import { Plus, LayoutGrid, RotateCcw, Check, MoveDown } from 'lucide-react';
 
 const WIDGET_STORAGE_KEY = 'brorup_dashboard_widgets_v3';
 
@@ -97,6 +97,7 @@ export default function DashboardPage() {
   });
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [isEditingLayout, setIsEditingLayout] = useState(false);
 
   // Modals state
   const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
@@ -242,36 +243,70 @@ export default function DashboardPage() {
         }}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenBackup={() => setIsBackupOpen(true)}
-        onOpenCustomizer={() => setIsCustomizerOpen(true)}
+        onToggleEditLayout={() => setIsEditingLayout((prev) => !prev)}
+        isEditingLayout={isEditingLayout}
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-7">
-        {/* Helper sub-bar for layout organization */}
-        <div className="flex items-center justify-between text-xs text-slate-500 pb-1 border-b border-slate-200/80">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-slate-700">Modulært Dashboard:</span>
-            <span>Træk i sektionerne eller brug pilene for at flytte rundt</span>
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        {/* Layout Editing Mode Control Bar - ONLY visible when user is customizing */}
+        {isEditingLayout && (
+          <div className="sticky top-18 z-20 bg-slate-900 text-white rounded-2xl p-3 sm:px-4 shadow-xl border border-slate-800 flex items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-150">
+            <div className="flex items-center gap-2.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-indigo-400 animate-pulse shrink-0"></span>
+              <span className="text-xs sm:text-sm font-bold text-white tracking-tight">
+                Tilpas moduler
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  const idx = widgetConfigs.findIndex((w) => w.id === 'printer_payoff');
+                  if (idx !== -1) {
+                    const copy = [...widgetConfigs];
+                    const [moved] = copy.splice(idx, 1);
+                    copy.push(moved);
+                    saveWidgetsToStorage(copy);
+                    showToast('Printer-afbetaling flyttet nederst');
+                  }
+                }}
+                type="button"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors border border-slate-700 cursor-pointer"
+              >
+                <MoveDown className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Printer nederst</span>
+              </button>
+
+              <button
+                onClick={() => setIsCustomizerOpen(true)}
+                type="button"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors border border-slate-700 cursor-pointer"
+              >
+                <LayoutGrid className="w-3.5 h-3.5 text-slate-300" />
+                <span className="hidden sm:inline">Vis / skjul moduler</span>
+              </button>
+
+              <button
+                onClick={handleResetWidgets}
+                type="button"
+                className="hidden md:inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-xl text-slate-400 hover:text-white transition-colors cursor-pointer"
+                title="Gendan standard"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+              </button>
+
+              <button
+                onClick={() => setIsEditingLayout(false)}
+                type="button"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-all shadow-xs cursor-pointer active:scale-95"
+              >
+                <Check className="w-3.5 h-3.5" />
+                <span>Færdig</span>
+              </button>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsCustomizerOpen(true)}
-              className="inline-flex items-center gap-1 font-semibold text-indigo-600 hover:text-indigo-800 transition-colors cursor-pointer"
-            >
-              <LayoutGrid className="w-3.5 h-3.5" />
-              <span>Tilpas / Gem layout</span>
-            </button>
-            <span className="text-slate-300">•</span>
-            <button
-              onClick={handleResetWidgets}
-              className="inline-flex items-center gap-1 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
-              title="Gendan standard rækkefølge"
-            >
-              <RotateCcw className="w-3 h-3" />
-              <span>Nulstil</span>
-            </button>
-          </div>
-        </div>
+        )}
 
         {/* Dynamic Reorderable Widgets */}
         {visibleWidgets.map((widget, index) => {
@@ -345,6 +380,7 @@ export default function DashboardPage() {
               index={index}
               totalWidgets={visibleWidgets.length}
               title={widget.title}
+              isEditingLayout={isEditingLayout}
               onMoveUp={handleMoveUp}
               onMoveDown={handleMoveDown}
               onDragStart={handleDragStart}
@@ -419,10 +455,10 @@ export default function DashboardPage() {
 
           <div className="flex items-center gap-4">
             <button
-              onClick={() => setIsCustomizerOpen(true)}
+              onClick={() => setIsEditingLayout((prev) => !prev)}
               className="hover:text-indigo-600 transition-colors cursor-pointer font-medium"
             >
-              Tilpas firkanter
+              {isEditingLayout ? 'Afslut layout' : 'Tilpas layout'}
             </button>
             <span className="text-slate-300">•</span>
             <button

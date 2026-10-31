@@ -28,7 +28,7 @@ export const TonerTracker: React.FC = () => {
 
   const handleFinishAndNext = (toner: Toner) => {
     markTonerFinishedAndActivateNext(toner.id);
-    showToast(`${toner.name} er nu markeret som FÆRDIG (Rød). Næste toner er aktiveret!`);
+    showToast(`${toner.name} er markeret som færdig. Næste toner er aktiveret!`);
   };
 
   const handleStatusChange = (tonerId: string, newStatus: TonerStatus) => {
@@ -67,9 +67,6 @@ export const TonerTracker: React.FC = () => {
                 {totalPrintsAcrossToners} prints logget
               </span>
             </div>
-            <p className="text-xs text-slate-500">
-              Nye ordrer tilføjes automatisk til den aktive toner
-            </p>
           </div>
         </div>
 
@@ -93,8 +90,6 @@ export const TonerTracker: React.FC = () => {
           const isActive = toner.status === 'active';
           const isReady = toner.status === 'ready';
 
-          const pct = Math.min(100, Math.round((toner.printedCount / (toner.capacity || 108)) * 100));
-
           return (
             <div
               key={toner.id}
@@ -116,7 +111,7 @@ export const TonerTracker: React.FC = () => {
                   {isFinished && (
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-700 text-white shadow-2xs">
                       <AlertOctagon className="w-3 h-3" />
-                      <span>Færdig (Rød)</span>
+                      <span>Færdig</span>
                     </span>
                   )}
 
@@ -134,21 +129,6 @@ export const TonerTracker: React.FC = () => {
                     </span>
                   )}
                 </div>
-
-                {/* Explicit Requirement Notice for Finished Red status */}
-                {isFinished && (
-                  <div className="mb-3 px-2.5 py-1.5 rounded-xl bg-rose-100/70 border border-rose-200 text-[11px] font-semibold text-rose-800 flex items-center gap-1.5">
-                    <AlertOctagon className="w-3.5 h-3.5 text-rose-600 shrink-0" />
-                    <span>Rød betyder den er færdig nu</span>
-                  </div>
-                )}
-
-                {/* Active explanation */}
-                {isActive && (
-                  <div className="mb-3 px-2.5 py-1.5 rounded-xl bg-emerald-100/70 border border-emerald-200 text-[11px] font-medium text-emerald-900">
-                    Nye ordrer tilføjes automatisk her.
-                  </div>
-                )}
 
                 {/* Large Counter */}
                 <div className="my-2">
@@ -183,7 +163,7 @@ export const TonerTracker: React.FC = () => {
                       <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 tabular-nums">
                         {toner.printedCount}{' '}
                         <span className="text-xs font-semibold text-slate-500">
-                          / {toner.capacity || 108} stk
+                          prints
                         </span>
                       </div>
                       <div className="flex items-center gap-1">
@@ -213,20 +193,6 @@ export const TonerTracker: React.FC = () => {
                   )}
                 </div>
 
-                {/* Progress bar */}
-                <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden mt-3">
-                  <div
-                    className={`h-full rounded-full transition-all duration-500 ${
-                      isFinished
-                        ? 'bg-rose-600'
-                        : isActive
-                        ? 'bg-emerald-600'
-                        : 'bg-slate-400'
-                    }`}
-                    style={{ width: `${pct}%` }}
-                  />
-                </div>
-
                 {/* Notes if available */}
                 {toner.notes && (
                   <p className="text-[11px] text-slate-500 mt-2 line-clamp-2 italic">
@@ -251,7 +217,7 @@ export const TonerTracker: React.FC = () => {
 
                 {/* Status Switcher */}
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-500 text-[11px] font-medium">Skift status:</span>
+                  <span className="text-slate-500 text-[11px] font-medium">Status:</span>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => handleStatusChange(toner.id, 'active')}
@@ -271,7 +237,7 @@ export const TonerTracker: React.FC = () => {
                           : 'bg-slate-100 text-slate-600 hover:bg-rose-100 hover:text-rose-800'
                       }`}
                     >
-                      Færdig (Rød)
+                      Færdig
                     </button>
                     <button
                       onClick={() => handleStatusChange(toner.id, 'ready')}

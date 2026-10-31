@@ -457,7 +457,7 @@ function QuickAddFormInner({
               >
                 {toners.map((t) => (
                   <option key={t.id} value={t.id}>
-                    {t.name} {t.status === 'active' ? '(Aktiv patron)' : t.status === 'finished' ? '(Færdig)' : '(Klar)'} — {t.printedCount}/{t.capacity || 108} print
+                    {t.name} {t.status === 'active' ? '(Aktiv)' : t.status === 'finished' ? '(Færdig)' : '(Klar)'} — {t.printedCount} print
                   </option>
                 ))}
               </select>

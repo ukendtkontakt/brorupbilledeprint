@@ -1,21 +1,23 @@
 'use client';
 
 import React from 'react';
-import { Printer, Plus, Settings, Database, CloudOff, LayoutGrid } from 'lucide-react';
+import { Printer, Plus, Settings, Database, CloudOff, LayoutGrid, Check } from 'lucide-react';
 import { usePrintStore } from '@/context/PrintStoreContext';
 
 interface HeaderProps {
   onOpenQuickAdd: () => void;
   onOpenSettings: () => void;
   onOpenBackup: () => void;
-  onOpenCustomizer: () => void;
+  onToggleEditLayout: () => void;
+  isEditingLayout: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   onOpenQuickAdd,
   onOpenSettings,
   onOpenBackup,
-  onOpenCustomizer,
+  onToggleEditLayout,
+  isEditingLayout,
 }) => {
   const { isCloudConnected } = usePrintStore();
 
@@ -89,16 +91,29 @@ export const Header: React.FC<HeaderProps> = ({
             )}
           </div>
 
-          {/* Customize Layout button */}
+          {/* Toggle Layout Mode button */}
           <button
-            onClick={onOpenCustomizer}
+            onClick={onToggleEditLayout}
             type="button"
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold rounded-xl text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100/90 transition-colors border border-indigo-200/70 shadow-2xs cursor-pointer active:scale-95"
-            title="Flyt rundt på firkanterne, skjul eller vis moduler"
+            className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-2xs cursor-pointer active:scale-95 ${
+              isEditingLayout
+                ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-600/20'
+                : 'text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100/90 border border-indigo-200/70'
+            }`}
+            title={isEditingLayout ? 'Afslut layout-tilstand' : 'Aktiver tilstand til at flytte rundt på firkanterne'}
           >
-            <LayoutGrid className="w-3.5 h-3.5 text-indigo-600" />
-            <span className="hidden md:inline">Tilpas layout</span>
-            <span className="md:hidden">Flyt</span>
+            {isEditingLayout ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-white" />
+                <span>Færdig</span>
+              </>
+            ) : (
+              <>
+                <LayoutGrid className="w-3.5 h-3.5 text-indigo-600" />
+                <span className="hidden md:inline">Tilpas layout</span>
+                <span className="md:hidden">Flyt</span>
+              </>
+            )}
           </button>
 
           {/* Backup / Export */}

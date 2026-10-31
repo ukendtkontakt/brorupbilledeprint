@@ -9,6 +9,7 @@ interface MovableWidgetWrapperProps {
   index: number;
   totalWidgets: number;
   title: string;
+  isEditingLayout: boolean;
   onMoveUp: (index: number) => void;
   onMoveDown: (index: number) => void;
   onDragStart: (e: React.DragEvent, index: number) => void;
@@ -25,6 +26,7 @@ export const MovableWidgetWrapper: React.FC<MovableWidgetWrapperProps> = ({
   index,
   totalWidgets,
   title,
+  isEditingLayout,
   onMoveUp,
   onMoveDown,
   onDragStart,
@@ -35,6 +37,16 @@ export const MovableWidgetWrapper: React.FC<MovableWidgetWrapperProps> = ({
   isDragOver,
   children,
 }) => {
+  // In normal operational mode: render completely clean without handles or drag clutter
+  if (!isEditingLayout) {
+    return (
+      <div id={`widget-${id}`} className="relative transition-all duration-200">
+        {children}
+      </div>
+    );
+  }
+
+  // In edit mode: show drag handle, up/down arrows and clear visual boundary
   return (
     <div
       id={`widget-${id}`}
@@ -43,23 +55,18 @@ export const MovableWidgetWrapper: React.FC<MovableWidgetWrapperProps> = ({
       onDragOver={(e) => onDragOver(e, index)}
       onDrop={(e) => onDrop(e, index)}
       onDragEnd={onDragEnd}
-      className={`group relative transition-all duration-200 ${
-        isDragging ? 'widget-dragging' : ''
-      } ${isDragOver ? 'widget-drag-over' : ''}`}
+      className={`group relative transition-all duration-200 p-2 sm:p-2.5 rounded-3xl border-2 border-dashed border-indigo-200/90 bg-indigo-50/20 ${
+        isDragging ? 'widget-dragging opacity-50 scale-[0.99]' : ''
+      } ${isDragOver ? 'widget-drag-over border-indigo-500 bg-indigo-100/40' : ''}`}
     >
       {/* Reorder control strip */}
-      <div className="flex items-center justify-between mb-2 px-1 select-none opacity-80 group-hover:opacity-100 transition-opacity">
-        <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-          <div
-            className="flex items-center gap-1 cursor-grab active:cursor-grabbing hover:text-slate-800 p-1 rounded-md hover:bg-slate-200/60 transition-colors"
-            title="Træk for at bytte rækkefølge"
-          >
-            <GripVertical className="w-4 h-4 text-slate-400" />
-            <span className="font-semibold text-slate-700">{title}</span>
-          </div>
-          <span className="text-[11px] text-slate-400 hidden sm:inline">
-            (Flytbar modul)
-          </span>
+      <div className="flex items-center justify-between mb-2 px-3 py-1.5 bg-white rounded-xl border border-indigo-100 shadow-2xs select-none">
+        <div
+          className="flex items-center gap-1.5 cursor-grab active:cursor-grabbing text-xs text-slate-700 font-semibold"
+          title="Træk for at bytte rækkefølge"
+        >
+          <GripVertical className="w-4 h-4 text-indigo-500" />
+          <span>{title}</span>
         </div>
 
         {/* Quick move up / down buttons */}
@@ -71,10 +78,9 @@ export const MovableWidgetWrapper: React.FC<MovableWidgetWrapperProps> = ({
               onMoveUp(index);
             }}
             disabled={index === 0}
-            className={`p-1 rounded-md text-slate-500 hover:text-slate-900 hover:bg-slate-200/70 transition-all ${
-              index === 0 ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'
+            className={`p-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all ${
+              index === 0 ? 'opacity-25 cursor-not-allowed' : 'cursor-pointer'
             }`}
-            title="Flyt sektion op"
             aria-label={`Flyt ${title} op`}
           >
             <ChevronUp className="w-4 h-4" />
@@ -86,10 +92,9 @@ export const MovableWidgetWrapper: React.FC<MovableWidgetWrapperProps> = ({
               onMoveDown(index);
             }}
             disabled={index === totalWidgets - 1}
-            className={`p-1 rounded-md text-slate-500 hover:text-slate-900 hover:bg-slate-200/70 transition-all ${
-              index === totalWidgets - 1 ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'
+            className={`p-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all ${
+              index === totalWidgets - 1 ? 'opacity-25 cursor-not-allowed' : 'cursor-pointer'
             }`}
-            title="Flyt sektion ned"
             aria-label={`Flyt ${title} ned`}
           >
             <ChevronDown className="w-4 h-4" />
